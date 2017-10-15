@@ -12,7 +12,7 @@ public class clientTester {
 
 	public static void test(int port) {
 		Scanner input = new Scanner(System.in);
-		System.out.println("Enter IP Address port:");
+		System.out.println("Enter IP Address:");
 		String serverAddress = input.nextLine();
 		input.close();
 
@@ -20,10 +20,15 @@ public class clientTester {
 			Socket s = new Socket(serverAddress, port);
 			BufferedReader input1 = new BufferedReader(new InputStreamReader(s.getInputStream()));
 
-//			while (input1.ready()) {
+			boolean t = true;
+			
+			while (t) {
+			if (input1.ready()) {
 				String answer = input1.readLine();
 				System.out.println(answer);
-			//}
+			}
+			else {t = false;}
+			}
 //			s.close();
 				while(true);
 		} catch (IOException e) {
@@ -31,5 +36,13 @@ public class clientTester {
 		}
 
 	}
+	
+	/*private void incoming(BufferedReader x) {
+		
+	}
+	
+	private void outgoing() {
+		
+	}*/
 
 }
