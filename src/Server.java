@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 /**
  * Server Abstract of the Sever for Helium
  * 
- * @author Kiarimas
+ * @author Lucas_Catron
  *
  */
 public class Server implements Runnable {
@@ -23,31 +23,8 @@ public class Server implements Runnable {
 	}
 
 	public boolean openServer() {
-		try {
-			listener = new ServerSocket(port);
-			open = true;
-			try {
-				while (true) {
-					Socket socket = listener.accept();
-					try {
-						PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-						out.println("Hello");
-						out.println();
-						out.println("This is a server");
-						out.flush();
-					} finally {
-						socket.close();
-					}
-
-				}
-
-			} finally {
-				listener.close();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
+		(new Thread(new Server(port))).start();
+		return true;
 	}
 
 	/**
@@ -77,8 +54,44 @@ public class Server implements Runnable {
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-		
+		try {
+			listener = new ServerSocket(port);
+			open = true;
+			try {
+				while (true) {
+					System.out.println("Waiting for a client...");
+				    Socket socket = listener.accept();
+				    System.out.println("accepted the socket");
+				    System.out.println();
+					try {
+						PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+						out.println("10");
+						out.flush();
+
+						BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+						boolean t = true;
+						while (t) {
+							if (br.ready()) {
+								String answer = br.readLine();
+								System.out.println(answer);
+							} else {
+								t = false;
+							}
+						}
+
+					} finally {
+						socket.close();
+					}
+
+				}
+
+			} finally {
+				listener.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 }
