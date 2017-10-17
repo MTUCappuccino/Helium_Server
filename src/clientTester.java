@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -18,17 +19,14 @@ public class clientTester {
 
 		try {
 			Socket s = new Socket(serverAddress, port);
-			BufferedReader input1 = new BufferedReader(new InputStreamReader(s.getInputStream()));
-
-			boolean t = true;
 			
-			while (t) {
-			if (input1.ready()) {
-				String answer = input1.readLine();
-				System.out.println(answer);
-			}
-			else {t = false;}
-			}
+			while(incoming(s));
+			/*incoming paste*/
+			
+			outgoing(s);
+			/*outgoing paste*/
+			
+			
 //			s.close();
 				while(true);
 		} catch (IOException e) {
@@ -37,12 +35,29 @@ public class clientTester {
 
 	}
 	
-	/*private void incoming(BufferedReader x) {
+	private static boolean incoming(Socket s) throws IOException {
+		BufferedReader input1 = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		
+		boolean t = true;
+		boolean wait = true;
+		
+		while (t) {
+		if (input1.ready()) {
+			String answer = input1.readLine();
+			System.out.println(answer);
+			wait = false;
+		}
+		else {t = false;}
+		}
+		return wait;
 	}
 	
-	private void outgoing() {
-		
-	}*/
+	private static void outgoing(Socket s) throws IOException {
+		PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+		out.println("Hello");
+		out.println("This is a client");
+		out.println();
+		out.flush();
+	}
 
 }

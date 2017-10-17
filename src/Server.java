@@ -7,21 +7,33 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 /**
- * Server Abstract of the Sever for Helium
+ * Server 
+ * the Sever for Helium
  * 
  * @author Lucas_Catron
  *
  */
 public class Server implements Runnable {
 
-	boolean open;
+	private boolean open;
 	private int port;
 	private ServerSocket listener;
 
+	/**
+	 * Server 
+	 * 
+	 * Constructor; sets the port number
+	 * @param portNum number to set to
+	 */
 	Server(int portNum) {
 		setPort(portNum);
 	}
 
+	/**
+	 * openServer
+	 * opens new server
+	 * @return
+	 */
 	public boolean openServer() {
 		(new Thread(new Server(port))).start();
 		return true;
@@ -44,10 +56,18 @@ public class Server implements Runnable {
 
 	}
 
+	/**
+	 * setPort
+	 * @param num
+	 */
 	public void setPort(int num) {
 		port = num;
 	}
 
+	/**
+	 * getPort
+	 * @return the port number
+	 */
 	public int getPort() {
 		return port;
 	}
@@ -58,26 +78,14 @@ public class Server implements Runnable {
 			listener = new ServerSocket(port);
 			open = true;
 			try {
-				while (true) {
+				while (open) {
 					System.out.println("Waiting for a client...");
-				    Socket socket = listener.accept();
-				    System.out.println("accepted the socket");
-				    System.out.println();
+					Socket socket = listener.accept();
+					System.out.println("accepted the socket");
+					System.out.println();
 					try {
-						PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-						out.println("10");
-						out.flush();
-
-						BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-						boolean t = true;
-						while (t) {
-							if (br.ready()) {
-								String answer = br.readLine();
-								System.out.println(answer);
-							} else {
-								t = false;
-							}
-						}
+						initalOut(socket);
+						while(initalIn(socket));
 
 					} finally {
 						socket.close();
@@ -92,6 +100,43 @@ public class Server implements Runnable {
 			e.printStackTrace();
 		}
 
+	}
+
+	/**
+	 * initialOut
+	 * place holder for future first contact with client
+	 * @param socket
+	 * @throws IOException
+	 */
+	private void initalOut(Socket socket) throws IOException {
+		PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+		out.println("10");
+		out.flush();
+		//out.close();
+	}
+
+	/**
+	 * initalIn
+	 * This method MUST run until input receive or time out. Takes response from client. Place holder
+	 * @param socket
+	 * @return
+	 * @throws IOException
+	 */
+	private boolean initalIn(Socket socket) throws IOException {
+		BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		boolean t = true;
+		boolean wait = true;
+		while (t) {
+			if (in.ready()) {
+				String answer = in.readLine();
+				System.out.println(answer);
+				wait = false;
+			} else {
+				t = false;
+			}
+		}
+//		in.close();
+		return wait;
 	}
 
 }
