@@ -18,6 +18,8 @@ public class Server implements Runnable {
 	private boolean open;
 	private int port;
 	private ServerSocket listener;
+	private String serverName;
+	private String password = "";
 
 	/**
 	 * Server 
@@ -27,6 +29,29 @@ public class Server implements Runnable {
 	 */
 	Server(int portNum) {
 		setPort(portNum);
+	}
+	
+	/**
+	 * Server 
+	 * 
+	 * Constructor; sets the port number, and name
+	 * @param portNum number to set to
+	 */
+	Server(int portNum, String name) {
+		setPort(portNum);
+		setName(name);
+	}
+	
+	/**
+	 * Server 
+	 * 
+	 * Constructor; sets the port number, and name, and password
+	 * @param portNum number to set to
+	 */
+	Server(int portNum, String name, String pass) {
+		setPort(portNum);
+		setName(name);
+		setPassword(pass);
 	}
 
 	/**
@@ -45,32 +70,11 @@ public class Server implements Runnable {
 	 * @return boolean, successful close = true
 	 */
 	public boolean closeServer() {
-		try {
-			listener.close();
-			open = false;
-			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
+		open = false;
+		return true;
 
 	}
 
-	/**
-	 * setPort
-	 * @param num
-	 */
-	public void setPort(int num) {
-		port = num;
-	}
-
-	/**
-	 * getPort
-	 * @return the port number
-	 */
-	public int getPort() {
-		return port;
-	}
 
 	@Override
 	public void run() {
@@ -81,14 +85,15 @@ public class Server implements Runnable {
 				while (open) {
 					System.out.println("Waiting for a client...");
 					Socket socket = listener.accept();
-					System.out.println("accepted the socket");
+					System.out.println("Accepted a socket...");
 					System.out.println();
 					try {
-						initalOut(socket);
-						while(initalIn(socket));
+						Person person = new Person(socket);
+						initalOut(person.getSocket());
+						while(initalIn(person.getSocket(), person));
 
 					} finally {
-						socket.close();
+//						socket.close();
 					}
 
 				}
@@ -122,7 +127,7 @@ public class Server implements Runnable {
 	 * @return
 	 * @throws IOException
 	 */
-	private boolean initalIn(Socket socket) throws IOException {
+	private boolean initalIn(Socket socket, Person p) throws IOException {
 		BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		boolean t = true;
 		boolean wait = true;
@@ -130,6 +135,10 @@ public class Server implements Runnable {
 			if (in.ready()) {
 				String answer = in.readLine();
 				System.out.println(answer);
+				p.setHandle(answer);
+				answer = in.readLine();
+				System.out.println(answer);
+				System.out.println(checkPassword(answer));     ////BROKEN
 				wait = false;
 			} else {
 				t = false;
@@ -137,6 +146,42 @@ public class Server implements Runnable {
 		}
 //		in.close();
 		return wait;
+	}
+	//\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ALL BELOW ARE SET, GET, CHECK METHODS/////////////////////////////////
+	/**
+	 * setPort
+	 * @param num
+	 */
+	public void setPort(int num) {
+		port = num;
+	}
+
+	/**
+	 * getPort
+	 * @return the port number
+	 */
+	public int getPort() {
+		return port;
+	}
+	
+	public void setName(String nim){
+		serverName = nim;
+	}
+	
+	public String getName(){
+		return serverName;
+	}
+	
+	private boolean setPassword(String x) {
+		password = x;
+		return true;
+	}
+	
+	private boolean checkPassword(String x) {
+		if (x == password) {
+			return true;
+		}
+		else { return false;}
 	}
 
 }
