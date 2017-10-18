@@ -6,8 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 /**
- * Server 
- * the Sever for Helium
+ * Server the Sever for Helium
  * 
  * @author Lucas_Catron
  *
@@ -21,14 +20,18 @@ public class Server implements Runnable {
 	private String password = "";
 	private String hexColor = "000000";
 	private String customBack = "";
-	
+
 	public boolean public_;
-	
+	Thread join;
+	ServerMessaging online = new ServerMessaging();
+
 	/**
-	 * Server 
+	 * Server
 	 * 
 	 * Constructor; sets the port number, and name, and password
-	 * @param portNum number to set to
+	 * 
+	 * @param portNum
+	 *            number to set to
 	 */
 	Server(int portNum, String name, String pass) {
 		setPort(portNum);
@@ -37,12 +40,12 @@ public class Server implements Runnable {
 	}
 
 	/**
-	 * openServer
-	 * opens new server
+	 * openServer opens new server
+	 * 
 	 * @return
 	 */
 	public boolean openServer() {
-		(new Thread(new Server(port, serverName, password))).start();
+	(new Thread(new Server(port, serverName, password))).start();
 		return true;
 	}
 
@@ -56,7 +59,6 @@ public class Server implements Runnable {
 		return true;
 
 	}
-
 
 	@Override
 	public void run() {
@@ -74,12 +76,16 @@ public class Server implements Runnable {
 						initalOut(person.getSocket());
 						initalIn(person.getSocket(), person);
 
-						if(person.getStatus()) {
+						if (person.getStatus()) {
 							outSetup(person.getSocket());
+							online.online.add(person);
+							System.out.println(online.online.size());
+							
+						} else {
+							outSeverMessage(person.getSocket(), "invalid_password");
 						}
-						else {outSeverMessage(person.getSocket(), "invalid_password");}
 					} finally {
-//						socket.close();
+					
 					}
 
 				}
@@ -94,8 +100,8 @@ public class Server implements Runnable {
 	}
 
 	/**
-	 * initialOut
-	 * place holder for future first contact with client
+	 * initialOut place holder for future first contact with client
+	 * 
 	 * @param socket
 	 * @throws IOException
 	 */
@@ -103,12 +109,13 @@ public class Server implements Runnable {
 		PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 		out.println("10");
 		out.flush();
-		//out.close();
+		// out.close();
 	}
 
 	/**
-	 * initalIn
-	 * This method MUST run until input receive or time out. Takes response from client. Place holder
+	 * initalIn This method MUST run until input receive or time out. Takes
+	 * response from client. Place holder
+	 * 
 	 * @param socket
 	 * @return
 	 * @throws IOException
@@ -119,46 +126,45 @@ public class Server implements Runnable {
 		while (t) {
 			if (in.ready()) {
 				String answer = in.readLine();
-				System.out.println(answer);
+//				System.out.println(answer);
 				String[] split = answer.split(",");
-				
+
 				byte nameLength = Byte.parseByte(split[0]);
 				byte passLength = Byte.parseByte(split[1]);
 				int junkread = split[0].length() + split[1].length() + 2;
-				
+
 				p.setHandle(answer.substring(junkread, junkread + nameLength));
-				
+
 				String pass = answer.substring(junkread + nameLength, junkread + nameLength + passLength);
-				
-				System.out.println(pass);
-//				System.out.println(checkPassword(pass)); 
+
+//				System.out.println(pass);
+				// System.out.println(checkPassword(pass));
 				p.setStatus(checkPassword(pass));
 				t = false;
 			} else {
 
 			}
 		}
-//		in.close();
+		// in.close();
 	}
-	
-	
-	
+
 	private void outSetup(Socket socket) throws IOException {
 		PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 		out.println(serverName + ";" + hexColor + ";" + customBack);
 		out.flush();
-		//out.close();
 	}
-	
+
 	private void outSeverMessage(Socket socket, String mess) throws IOException {
 		PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 		out.println(mess);
 		out.flush();
-		//out.close();
+		// out.close();
 	}
-	//\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ALL BELOW ARE SET, GET, CHECK METHODS/////////////////////////////////
+
+	// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ALL BELOW ARE SET, GET, CHECK METHODS/////////////////////////////////
 	/**
 	 * setPort
+	 * 
 	 * @param num
 	 */
 	public void setPort(int num) {
@@ -167,32 +173,34 @@ public class Server implements Runnable {
 
 	/**
 	 * getPort
+	 * 
 	 * @return the port number
 	 */
 	public int getPort() {
 		return port;
 	}
-	
-	public void setName(String nim){
+
+	public void setName(String nim) {
 		serverName = nim;
 	}
-	
-	public String getName(){
+
+	public String getName() {
 		return serverName;
 	}
-	
+
 	private boolean setPassword(String x) {
 		password = x;
 		return true;
 	}
-	
+
 	private boolean checkPassword(String x) {
 		if (x.equals(password)) {
 			return true;
+		} else {
+			return false;
 		}
-		else { return false;}
 	}
-	
+
 	public void setHexColor(String x) {
 		hexColor = x;
 	}
