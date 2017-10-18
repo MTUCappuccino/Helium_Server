@@ -8,6 +8,7 @@ import java.net.Socket;
 public class Person {
 
 
+	private boolean good = true;
 	private String handle;
 	private Socket socket;
 
@@ -26,5 +27,13 @@ public class Person {
 	
 	public Person(Socket s) {
 		socket = s;
+	}
+	
+	public void setStatus(boolean b) {
+		good = b;
+	}
+	
+	public boolean getStatus() {
+		return good;
 	}
 }

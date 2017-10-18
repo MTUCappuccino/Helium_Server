@@ -1,6 +1,5 @@
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,29 +17,12 @@ public class Server implements Runnable {
 	private boolean open;
 	private int port;
 	private ServerSocket listener;
-	private String serverName;
+	private String serverName = "";
 	private String password = "";
-
-	/**
-	 * Server 
-	 * 
-	 * Constructor; sets the port number
-	 * @param portNum number to set to
-	 */
-	Server(int portNum) {
-		setPort(portNum);
-	}
+	private String hexColor = "000000";
+	private String customBack = "";
 	
-	/**
-	 * Server 
-	 * 
-	 * Constructor; sets the port number, and name
-	 * @param portNum number to set to
-	 */
-	Server(int portNum, String name) {
-		setPort(portNum);
-		setName(name);
-	}
+	public boolean public_;
 	
 	/**
 	 * Server 
@@ -60,7 +42,7 @@ public class Server implements Runnable {
 	 * @return
 	 */
 	public boolean openServer() {
-		(new Thread(new Server(port))).start();
+		(new Thread(new Server(port, serverName, password))).start();
 		return true;
 	}
 
@@ -90,8 +72,12 @@ public class Server implements Runnable {
 					try {
 						Person person = new Person(socket);
 						initalOut(person.getSocket());
-						while(initalIn(person.getSocket(), person));
+						initalIn(person.getSocket(), person);
 
+						if(person.getStatus()) {
+							outSetup(person.getSocket());
+						}
+						else {outSeverMessage(person.getSocket(), "invalid_password");}
 					} finally {
 //						socket.close();
 					}
@@ -127,25 +113,48 @@ public class Server implements Runnable {
 	 * @return
 	 * @throws IOException
 	 */
-	private boolean initalIn(Socket socket, Person p) throws IOException {
+	private void initalIn(Socket socket, Person p) throws IOException {
 		BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		boolean t = true;
-		boolean wait = true;
 		while (t) {
 			if (in.ready()) {
 				String answer = in.readLine();
 				System.out.println(answer);
-				p.setHandle(answer);
-				answer = in.readLine();
-				System.out.println(answer);
-				System.out.println(checkPassword(answer));     ////BROKEN
-				wait = false;
-			} else {
+				String[] split = answer.split(",");
+				
+				byte nameLength = Byte.parseByte(split[0]);
+				byte passLength = Byte.parseByte(split[1]);
+				int junkread = split[0].length() + split[1].length() + 2;
+				
+				p.setHandle(answer.substring(junkread, junkread + nameLength));
+				
+				String pass = answer.substring(junkread + nameLength, junkread + nameLength + passLength);
+				
+				System.out.println(pass);
+//				System.out.println(checkPassword(pass)); 
+				p.setStatus(checkPassword(pass));
 				t = false;
+			} else {
+
 			}
 		}
 //		in.close();
-		return wait;
+	}
+	
+	
+	
+	private void outSetup(Socket socket) throws IOException {
+		PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+		out.println(serverName + ";" + hexColor + ";" + customBack);
+		out.flush();
+		//out.close();
+	}
+	
+	private void outSeverMessage(Socket socket, String mess) throws IOException {
+		PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+		out.println(mess);
+		out.flush();
+		//out.close();
 	}
 	//\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ALL BELOW ARE SET, GET, CHECK METHODS/////////////////////////////////
 	/**
@@ -178,10 +187,14 @@ public class Server implements Runnable {
 	}
 	
 	private boolean checkPassword(String x) {
-		if (x == password) {
+		if (x.equals(password)) {
 			return true;
 		}
 		else { return false;}
+	}
+	
+	public void setHexColor(String x) {
+		hexColor = x;
 	}
 
 }

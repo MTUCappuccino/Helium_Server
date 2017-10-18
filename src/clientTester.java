@@ -20,11 +20,14 @@ public class clientTester {
 		try {
 			Socket s = new Socket(serverAddress, port);
 			
-			while(incoming(s));
+			incoming(s);
 			/*incoming paste*/
 			
 			outgoing(s);
 			/*outgoing paste*/
+			
+			incoming(s);
+			
 			
 			
 //			s.close();
@@ -35,28 +38,26 @@ public class clientTester {
 
 	}
 	
-	private static boolean incoming(Socket s) throws IOException {
+	private static void incoming(Socket s) throws IOException {
 		BufferedReader input1 = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		
 		boolean t = true;
-		boolean wait = true;
+
 		
 		while (t) {
 		if (input1.ready()) {
 			String answer = input1.readLine();
 			System.out.println(answer);
-			wait = false;
+			t = false;
 		}
-		else {t = false;}
+		else {}
 		}
-		return wait;
+
 	}
 	
 	private static void outgoing(Socket s) throws IOException {
 		PrintWriter out = new PrintWriter(s.getOutputStream(), true);
-		out.println("Hello");
-		out.println("This is a client");
-		out.println();
+		out.println("4,0,2upa,");
 		out.flush();
 	}
 
