@@ -187,11 +187,7 @@ public class Server implements Runnable {
     }
 
     private boolean checkPassword(String x) {
-        if (x.equals(password)) {
-            return true;
-        } else {
-            return false;
-        }
+        return x.equals(password);
     }
 
     public void setHexColor(String x) {

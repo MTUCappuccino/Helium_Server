@@ -38,7 +38,6 @@ public class ServerMessaging implements Runnable {
                 Logger.getLogger(ServerMessaging.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-
     }
 
     protected void push(String message) throws IOException {
