@@ -1,4 +1,3 @@
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -40,6 +39,12 @@ public class ServerMessaging implements Runnable {
         }
     }
 
+    /**
+     * push
+     * pushes message to all list persons currently joined
+     * @param message
+     * @throws IOException
+     */
     protected void push(String message) throws IOException {
         System.out.println("PUSHING");
         for (int i = 0; i < online.size(); i++) {
