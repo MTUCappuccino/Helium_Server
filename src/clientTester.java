@@ -19,46 +19,47 @@ public class clientTester {
 
 		try {
 			Socket s = new Socket(serverAddress, port);
-			
+
 			incoming(s);
-			/*incoming paste*/
-			
+			/* incoming paste */
+
 			outgoing(s);
-			/*outgoing paste*/
-			
+			/* outgoing paste */
+
 			incoming(s);
-			
-			
-			
-//			s.close();
-				while(true);
+
+			incoming(s);
+
+			// s.close();
+			while (true)
+				;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
 	}
-	
+
 	private static void incoming(Socket s) throws IOException {
 		BufferedReader input1 = new BufferedReader(new InputStreamReader(s.getInputStream()));
-		
+
 		boolean t = true;
 
-		
 		while (t) {
-		if (input1.ready()) {
-			String answer = input1.readLine();
-			System.out.println(answer);
-			t = false;
-		}
-		else {}
+			if (input1.ready()) {
+				String answer = input1.readLine();
+				System.out.println(answer);
+				t = false;
+			} else {
+			}
 		}
 
 	}
-	
+
 	private static void outgoing(Socket s) throws IOException {
 		PrintWriter out = new PrintWriter(s.getOutputStream(), true);
 		out.println("4,0,2upa,");
 		out.flush();
 	}
+
 
 }

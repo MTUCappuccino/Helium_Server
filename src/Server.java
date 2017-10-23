@@ -1,4 +1,3 @@
-
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.IOException;
@@ -11,7 +10,10 @@ import java.io.IOException;
  */
 public class Server implements Runnable {
 
+	//Tracks if server open
     private boolean open;
+    
+    //Port to run on
     private int port;
     private ServerSocket listener;
     private String serverName = "";
@@ -20,7 +22,6 @@ public class Server implements Runnable {
     private String customBack = "NULL";
 
     public boolean public_;
-    Thread join;
     ServerMessaging online = new ServerMessaging();
 
     /**
@@ -97,8 +98,8 @@ public class Server implements Runnable {
     }
 
     /**
-     * initialOut place holder for future first contact with client
-     *
+     * initialOut first contact with client begins, sends
+     * Initial data asking requirements
      * @param socket
      * @throws IOException
      */
@@ -110,16 +111,14 @@ public class Server implements Runnable {
 
     /**
      * initalIn This method MUST run until input receive or time out. Takes
-     * response from client. Place holder
+     * response from client.
      *
      * @param socket
      * @return
      * @throws IOException
      */
     private void initalIn(Person p) throws IOException {
-        boolean t = true;
-//		while (t) {
-//			if (in.ready()) {
+        
         String answer = p.getInput().readLine();
 //				System.out.println(answer);
         String[] split = answer.split(",");
@@ -132,26 +131,30 @@ public class Server implements Runnable {
 
         String pass = answer.substring(junkread + nameLength, junkread + nameLength + passLength);
 
-//				System.out.println(pass);
-        // System.out.println(checkPassword(pass));
         p.setStatus(checkPassword(pass));
-        t = false;
-//			} else {
-//
-//			}
-//		}
-        // in.close();
     }
 
+    /**
+     * outSetup
+     * sends data based on first response to build on client side.
+     * @param person
+     * @throws IOException
+     */
     private void outSetup(Person person) throws IOException {
         person.getOutput().write(serverName + ";" + hexColor + ";" + customBack + "\n");
         person.getOutput().flush();
     }
 
+    /**
+     * outServerMessage
+     * sends direct messages from server to a user.
+     * @param person
+     * @param mess
+     * @throws IOException
+     */
     private void outSeverMessage(Person person, String mess) throws IOException {
         person.getOutput().write(mess);
         person.getOutput().flush();
-        // out.close();
     }
 
     // \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ALL BELOW ARE SET, GET, CHECK METHODS/////////////////////////////////
@@ -173,23 +176,49 @@ public class Server implements Runnable {
         return port;
     }
 
-    public void setName(String nim) {
-        serverName = nim;
+    /**
+     * setName
+     * sets server name
+     * @param name
+     */
+    public void setName(String name) {
+        serverName = name;
     }
 
+    /**
+     * getName
+     * returns server name
+     * @return serverName
+     */
     public String getName() {
         return serverName;
     }
 
+    /**
+     * sets the password
+     * @param x: the password
+     * @return : if set 
+     */
     private boolean setPassword(String x) {
         password = x;
         return true;
     }
 
+    /**
+     * checkPassword
+     * sees if input matches set password
+     * @param x
+     * @return: if true
+     */
     private boolean checkPassword(String x) {
         return x.equals(password);
     }
 
+    /**
+     * setColor
+     * sets hex color for server
+     * @param x
+     */
     public void setHexColor(String x) {
         hexColor = x;
     }
