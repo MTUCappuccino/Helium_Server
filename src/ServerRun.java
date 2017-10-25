@@ -1,33 +1,42 @@
 import java.util.Scanner;
+
 /**
- * ServerRun
- * Command line maker for launching a server
+ * ServerRun Command line maker for launching a server
+ * 
  * @author Lucas_Catron
  *
  */
 public class ServerRun {
+
 	static Server server;
+	private static boolean runningServer = false;
+	private static boolean on = true;
 
 	public static void main(String[] args) {
 
-		//Commands input area
-		Sysp("Commands: make, help, ,");
-		takeCommand();
+		Scanner input = new Scanner(System.in);
+		Sysp("Commands: make, help, shutdown,");
+		while (on) {
+			if (input.hasNext()) {
+				String command = input.next().toLowerCase();
+				takeCommand(command);
+			}
+		}
 
 	}
-	
+
 	/**
-	 * Sysp 
-	 * System print short cut statement
+	 * Sysp System print short cut statement
+	 * 
 	 * @param x
 	 */
 	private static void Sysp(String x) {
 		System.out.println(x);
 	}
-	
+
 	/**
-	 * makeServer
-	 * asks for inputs to make a required server, then launches join thread
+	 * makeServer asks for inputs to make a required server, then launches join
+	 * thread
 	 */
 	private static void makeServer() {
 		String pass = "";
@@ -38,35 +47,37 @@ public class ServerRun {
 		String name = input.next();
 		Sysp("Password entry?(Y/N): ");
 		String answer = input.next().toLowerCase();
-		if(answer.equals("y")||answer.equals("yes")) {
+		if (answer.equals("y") || answer.equals("yes")) {
 			Sysp("Password: ");
 			pass = input.next();
 		}
 		server = new Server(port, name, pass);
 		input.close();
 		server.openServer();
+		runningServer = true;
 	}
-	
+
 	/**
-	 * takeCommand
-	 * takes string input and decides appropriate action
+	 * takeCommand takes string input and decides appropriate action
 	 */
-	private static void takeCommand(){
-		Scanner input = new Scanner(System.in);
-		String command = input.next().toLowerCase();
+	private static void takeCommand(String command) {
 		switch (command) {
-		case "help": 
+		case "help":
 			Sysp("MAKE: will ask for inputs then make a server");
 			Sysp("HELP: prints this message");
-			takeCommand();
+			// takeCommand();
 			break;
-		case "make":  
-			makeServer();
+		case "make":
+			if (!runningServer)
+				makeServer();
 			break;
-		default: 
+		case "shutdown":
+			on = false;
+			break;
+		default:
 			Sysp("Invaild command");
-			input.close();
-			takeCommand();
+			break;
+			// takeCommand();
 		}
 	}
 
