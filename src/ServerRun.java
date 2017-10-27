@@ -17,10 +17,11 @@ public class ServerRun {
 		Scanner input = new Scanner(System.in);
 		Sysp("Commands: make, help, shutdown,");
 		while (on) {
-			if (input.hasNext()) {
-				String command = input.next().toLowerCase();
-				takeCommand(command);
-			}
+                    System.out.print("> "); // ADDED A LITTLE PROMPT
+//			if (input.hasNext()) { NO NEED FOR THIS, nextLine() WILL BLOCK
+				String command = input.nextLine().toLowerCase();
+				takeCommand(command, input);
+//			}
 		}
 
 	}
@@ -38,21 +39,21 @@ public class ServerRun {
 	 * makeServer asks for inputs to make a required server, then launches join
 	 * thread
 	 */
-	private static void makeServer() {
+	private static void makeServer(Scanner input) {
 		String pass = "";
-		Scanner input = new Scanner(System.in);
+//		Scanner input = new Scanner(System.in); DON'T CREATE A NEW SCANNER
 		Sysp("Port to open: ");
 		int port = input.nextInt();
 		Sysp("Server Name: ");
-		String name = input.next();
+		String name = input.nextLine(); // USE NEXT LINE
 		Sysp("Password entry?(Y/N): ");
-		String answer = input.next().toLowerCase();
+		String answer = input.nextLine().toLowerCase(); // USE NEXT LINE
 		if (answer.equals("y") || answer.equals("yes")) {
 			Sysp("Password: ");
-			pass = input.next();
+			pass = input.nextLine(); // USE NEXT LINE
 		}
 		server = new Server(port, name, pass);
-		input.close();
+//		input.close(); SINCE WE'RE SHARING A SCANNER, DON'T CLOSE IT!
 		server.openServer();
 		runningServer = true;
 	}
@@ -60,7 +61,7 @@ public class ServerRun {
 	/**
 	 * takeCommand takes string input and decides appropriate action
 	 */
-	private static void takeCommand(String command) {
+	private static void takeCommand(String command, Scanner scanner) {
 		switch (command) {
 		case "help":
 			Sysp("MAKE: will ask for inputs then make a server");
@@ -69,7 +70,7 @@ public class ServerRun {
 			break;
 		case "make":
 			if (!runningServer)
-				makeServer();
+				makeServer(scanner);
 			break;
 		case "shutdown":
 			on = false;
