@@ -1,3 +1,7 @@
+
+
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.Scanner;
 
 /**
@@ -17,11 +21,10 @@ public class ServerRun {
 		Scanner input = new Scanner(System.in);
 		Sysp("Commands: make, help, shutdown,");
 		while (on) {
-                    System.out.print("> "); // ADDED A LITTLE PROMPT
-//			if (input.hasNext()) { NO NEED FOR THIS, nextLine() WILL BLOCK
-				String command = input.nextLine().toLowerCase();
-				takeCommand(command, input);
-//			}
+			System.out.print("> "); // ADDED A LITTLE PROMPT
+			String command = input.nextLine().toLowerCase();
+			takeCommand(command, input);
+			// }
 		}
 
 	}
@@ -36,14 +39,39 @@ public class ServerRun {
 	}
 
 	/**
+	 * takeCommand takes string input and decides appropriate action
+	 */
+	private static void takeCommand(String command, Scanner scanner) {
+		switch (command) {
+		case "help":
+			Sysp("HELP: prints this message");
+			Sysp("MAKE: will ask for inputs then make a server");
+			break;
+		case "make":
+			if (!runningServer) {
+				makeServer(scanner);
+			} else {
+				Sysp("Already running server");
+			}
+			break;
+		case "shutdown":
+			server.closeServer();
+			on = false;
+			break;
+		default:
+			Sysp("Invaild command");
+			break;
+		}
+	}
+
+	/**
 	 * makeServer asks for inputs to make a required server, then launches join
 	 * thread
 	 */
 	private static void makeServer(Scanner input) {
 		String pass = "";
-//		Scanner input = new Scanner(System.in); DON'T CREATE A NEW SCANNER
 		Sysp("Port to open: ");
-		int port = input.nextInt();
+		int port = Integer.parseInt(input.nextLine());
 		Sysp("Server Name: ");
 		String name = input.nextLine(); // USE NEXT LINE
 		Sysp("Password entry?(Y/N): ");
@@ -52,34 +80,44 @@ public class ServerRun {
 			Sysp("Password: ");
 			pass = input.nextLine(); // USE NEXT LINE
 		}
+
+		while (checkPortInUse(port)) {
+			Sysp("Port in use. AutoPort? Y/N : ");
+			answer = input.nextLine().toLowerCase(); // USE NEXT LINE
+			if (answer.equals("y") || answer.equals("yes")) {
+				port = autoPort(port);
+				Sysp("Now using port: " + port);
+			} else {
+				System.out.println("New port: ");
+				port = Integer.parseInt(input.nextLine());
+			}
+		}
+		
+		
 		server = new Server(port, name, pass);
-//		input.close(); SINCE WE'RE SHARING A SCANNER, DON'T CLOSE IT!
+
 		server.openServer();
 		runningServer = true;
 	}
 
-	/**
-	 * takeCommand takes string input and decides appropriate action
-	 */
-	private static void takeCommand(String command, Scanner scanner) {
-		switch (command) {
-		case "help":
-			Sysp("MAKE: will ask for inputs then make a server");
-			Sysp("HELP: prints this message");
-			// takeCommand();
-			break;
-		case "make":
-			if (!runningServer)
-				makeServer(scanner);
-			break;
-		case "shutdown":
-			on = false;
-			break;
-		default:
-			Sysp("Invaild command");
-			break;
-			// takeCommand();
+	private static boolean checkPortInUse(int port) {
+		ServerSocket listener;
+
+		try {
+			listener = new ServerSocket(port);
+			listener.close();
+			return false;
+		} catch (IOException e) {
+			return true;
 		}
+	}
+
+	private static int autoPort(int port) {
+
+		while (checkPortInUse(port)) {
+			port += 1;
+		}
+		return port;
 	}
 
 }

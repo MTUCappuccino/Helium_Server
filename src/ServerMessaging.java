@@ -1,3 +1,4 @@
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -8,10 +9,11 @@ public class ServerMessaging implements Runnable {
     ArrayList<Person> online = new ArrayList<Person>();
 
     private boolean open = true;
+    protected Thread t;
 
     public ServerMessaging() {
         System.out.println("STARTING THREAD");
-        Thread t = new Thread(this);
+        t = new Thread(this);
         t.setName("ServerMessaging");
         t.start();
     }
@@ -23,6 +25,8 @@ public class ServerMessaging implements Runnable {
                 try {
                     if (online.get(i).getInput().ready()) {
                         String mess = online.get(i).getInput().readLine();
+                        // Message m = new Message(asdlkfasdjl);
+                        // add to queue
                         System.out.println("Got message from " + online.get(i).getHandle() + ": " + mess);
                         push(mess);
                     }
@@ -38,6 +42,10 @@ public class ServerMessaging implements Runnable {
             }
         }
     }
+    
+    public void close() {
+    	open = false;
+    }
 
     /**
      * push
@@ -51,6 +59,12 @@ public class ServerMessaging implements Runnable {
             System.out.println("Sending to: " + online.get(i).getHandle());
             online.get(i).getOutput().write(message + "\n");
             online.get(i).getOutput().flush();
+            // online.get(i).getOutput().write(message.toString());
         }
+    }
+    
+    public boolean closeMess() {
+    	open = false;
+    	return true;
     }
 }

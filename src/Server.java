@@ -1,6 +1,6 @@
+
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
 import java.io.IOException;
 
 /**
@@ -16,8 +16,6 @@ public class Server implements Runnable {
 
 	// Port to run on
 	private int port;
-	private int defaultPort = 9090;
-	private boolean autoPort = false;
 	private ServerSocket listener;
 	private String serverName = "";
 	private String password = "";
@@ -25,7 +23,7 @@ public class Server implements Runnable {
 	private String customBack = "NULL";
 
 	public boolean public_;
-	Thread t = new Thread(this);
+	Thread t; //= new Thread(this);
 	ServerMessaging online = new ServerMessaging();
 
 	/**
@@ -48,7 +46,8 @@ public class Server implements Runnable {
 	 * @return
 	 */
 	public boolean openServer() {
-		new Thread(this).start();
+		t = new Thread(this);
+		t.start();
 		return true;
 	}
 
@@ -59,12 +58,26 @@ public class Server implements Runnable {
 	 */
 	public boolean closeServer() {
 		open = false;
+		try {
+			listener.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		online.close();
 		return true;
-
 	}
 
 	@Override
 	public void run() {
+		
+		// create the listener while/try
+		
+		// listen on the port while
+		
+		// clean up stuff
+		
+		
+		
 		try {
 			listener = new ServerSocket(port);
 			open = true;
@@ -83,7 +96,6 @@ public class Server implements Runnable {
 							outSetup(person);
 							online.online.add(person);
 							outServerAll("0,1,,," + person.getHandle() + " joined\n");
-							// System.out.println(online.online.size());
 
 						} else {
 							outSeverMessage(person, "invalid_password");
@@ -98,36 +110,7 @@ public class Server implements Runnable {
 				listener.close();
 			}
 		} catch (IOException e) {
-			System.out.println("Port in use already.");
-			if (autoPort == false) {
-				
-				Scanner input = new Scanner(System.in);
-				System.out.println("Would you like to try to auto port? Y/N : ");
-				while (input.hasNext() == false) {
-//					NEEDS TO WAIT FOR INPUT
-				}
-				String answer = input.next().toLowerCase();
-				
-				if (answer == "y") {
-					autoPort = true;
-				} else {
-					System.out.println("Port: ");
-					int p = input.nextInt();
-					setPort(p);
-				}
-				
-			} else {
-				if (defaultPort == port) {
-					defaultPort += 1;
-				}
-				setPort(defaultPort);
-				System.out.println("Trying: " + defaultPort);
-				defaultPort += 1;
-			}
 
-//			setPort(9090);
-			run();
-			// e.printStackTrace();
 		}
 
 	}
