@@ -95,7 +95,7 @@ public class Server implements Runnable {
 						if (person.getStatus()) {
 							outSetup(person);
 							online.online.add(person);
-							outServerAll("0,1,,," + person.getHandle() + " joined\n");
+//							outServerAll("0,1,,," + person.getHandle() + " joined\n");
 
 						} else {
 							outSeverMessage(person, "invalid_password");
@@ -176,7 +176,7 @@ public class Server implements Runnable {
 		person.getOutput().flush();
 	}
 
-	private void outServerAll(String mess) {
+	private void outServerAll(Message mess) {
 		try {
 			online.push(mess);
 		} catch (IOException e) {

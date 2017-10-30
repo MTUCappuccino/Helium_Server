@@ -8,27 +8,24 @@ import java.util.Scanner;
 public class clientTester {
 
 	public static void main(String[] args) {
-		test(9090);
+		testLocalConnect(9090);
 	}
 
-	public static void test(int port) {
-		Scanner input = new Scanner(System.in);
-		System.out.println("Enter IP Address:");
-		String serverAddress = input.nextLine();
-		input.close();
+	public static void testLocalConnect(int port) {
 
 		try {
-			Socket s = new Socket(serverAddress, port);
+			Socket s = new Socket("localhost", port);
+			BufferedReader input1 = new BufferedReader(new InputStreamReader(s.getInputStream()));
 
-			incoming(s);
+			incoming(s, input1);
 			/* incoming paste */
 
-			outgoing(s);
+			outgoing(s, "4,0,2upa,");
 			/* outgoing paste */
 
-			incoming(s);
+			outgoing(s, messOUT("1;3;1;tester1;test").toString());
 
-			incoming(s);
+			incoming(s, input1);
 
 			// s.close();
 			while (true)
@@ -39,8 +36,8 @@ public class clientTester {
 
 	}
 
-	private static void incoming(Socket s) throws IOException {
-		BufferedReader input1 = new BufferedReader(new InputStreamReader(s.getInputStream()));
+	private static void incoming(Socket s, BufferedReader input1) throws IOException {
+		
 
 		boolean t = true;
 
@@ -55,11 +52,25 @@ public class clientTester {
 
 	}
 
-	private static void outgoing(Socket s) throws IOException {
+	private static void outgoing(Socket s, String sting) throws IOException {
 		PrintWriter out = new PrintWriter(s.getOutputStream(), true);
-		out.println("4,0,2upa,");
+		out.println(sting);
 		out.flush();
 	}
+	
+	private static Message messOUT(String mess) {
+    	String[] unparsedSegments = mess.split(";");
+    	
+        Message.MessageType type = Message.MessageType.values()[Integer.parseInt(unparsedSegments[0])];
+        int id = Integer.parseInt(unparsedSegments[1]);
+        Message.ContentType contentType = Message.ContentType.values()[Integer.parseInt(unparsedSegments[2])];
+        String sender = unparsedSegments[3];
+        String userMessage = unparsedSegments[4];
+        
+        Message m = new Message(type, id, contentType, sender, System.currentTimeMillis(), userMessage);
+        
+        return m;
+    }
 
 
 }
