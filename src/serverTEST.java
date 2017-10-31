@@ -13,12 +13,12 @@ public class serverTEST {
 
 	@Test
 	public void buildTest() {
-		Server test = new Server(9090, "TEST", "");
+		Server test = new Server(9090, "TEST", "", false, true);
 	}
 
 	@Test
 	public void RunTest1() {
-		Server test = new Server(9090, "TEST", "");
+		Server test = new Server(9090, "TEST", "", false, true);
 		test.openServer();
 		test.closeServer();
 	}

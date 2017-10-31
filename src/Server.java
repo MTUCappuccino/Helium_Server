@@ -13,12 +13,15 @@ public class Server implements Runnable {
 
 	// Tracks if server open
 	private boolean open = true;
+	private boolean handles;
+	private boolean passes;
+	private String serverType;
 
-	// Port to run on
 	private int port;
 	private ServerSocket listener;
 	private String serverName = "";
 	private String password = "";
+	//Default server color is black
 	private String hexColor = "000000";
 	private String customBack = "NULL";
 
@@ -29,31 +32,43 @@ public class Server implements Runnable {
 	/**
 	 * Server
 	 *
-	 * Constructor; sets the port number, and name, and password
+	 * Constructor; sets the port number, and name, password, and whether server will require 
+	 * 		handles and passwords
 	 *
 	 * @param portNum
-	 *            number to set to
+	 * 		number to set port to
+	 * @param name
+	 * 		name of server
+	 * @param pass
+	 * 		password to set
+	 * @param passesI
+	 * 		If server requires password
+	 * @param handlesI
+	 * 		If server requires handles
 	 */
-	Server(int portNum, String name, String pass) {
+	Server(int portNum, String name, String pass, boolean passesI, boolean handlesI) {
 		setPort(portNum);
 		setName(name);
 		setPassword(pass);
+		handles = handlesI;
+		passes = passesI;	
 	}
 
 	/**
-	 * openServer opens new server
+	 * openServer opens new server, starts new thread
 	 *
 	 * @return
 	 */
 	public boolean openServer() {
 		t = new Thread(this);
 		t.start();
+		t.setName("AcceptThread");
 		return true;
 	}
 
 	/**
 	 * closeServer()
-	 *
+	 *		Closes the server, and the messaging thread
 	 * @return boolean, successful close = true
 	 */
 	public boolean closeServer() {
@@ -76,7 +91,7 @@ public class Server implements Runnable {
 		
 		// clean up stuff
 		
-		
+		serverType = createServerType();
 		
 		try {
 			listener = new ServerSocket(port);
@@ -87,6 +102,7 @@ public class Server implements Runnable {
 					Socket socket = listener.accept();
 					System.out.println("Accepted a socket...");
 					System.out.println();
+					
 					try {
 						Person person = new Person(socket);
 						initalOut(person);
@@ -123,7 +139,7 @@ public class Server implements Runnable {
 	 * @throws IOException
 	 */
 	private void initalOut(Person person) throws IOException {
-		person.getOutput().write("10\n");
+		person.getOutput().write(serverType + "\n");
 		person.getOutput().flush();
 		// out.close();
 	}
@@ -150,7 +166,12 @@ public class Server implements Runnable {
 
 		String pass = answer.substring(junkread + nameLength, junkread + nameLength + passLength);
 
+		if (serverType.equals("01") || serverType.equals("11")) {
 		p.setStatus(checkPassword(pass));
+		if (p.getStatus() == false) {
+			System.out.println("Failed password attempt");
+		}
+		} else {p.setStatus(true);}
 	}
 
 	/**
@@ -184,9 +205,24 @@ public class Server implements Runnable {
 			e.printStackTrace();
 		}
 	}
+	
+	private String createServerType() {
+		if(handles == true) {
+			if(passes == true) {
+				return "11";
+			}else {
+				return "10";
+			}
+		} else {
+			if (passes == true) {
+				return "01";
+			}else {
+				return "00";
+			}
+		}
+	}
 
-	// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ALL BELOW ARE SET, GET, CHECK
-	// METHODS/////////////////////////////////
+	// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ALL BELOW ARE SET, GET, CHECK// METHODS/////////////////////////////////
 	/**
 	 * setPort
 	 *

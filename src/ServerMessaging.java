@@ -11,18 +11,18 @@ public class ServerMessaging implements Runnable {
     ArrayList<Person> online = new ArrayList<Person>();
     protected CircleQue messQueue = new CircleQue(300);
     
-    Message zero = new Message(Message.MessageType.NEW_MESSAGE, null, null, null);
-    Message one = new Message(Message.MessageType.EDIT_MESSAGE, null, null, null);
-    Message two = new Message(Message.MessageType.DELETE_MESSAGE, null, null, null);
-    Message three = new Message(Message.MessageType.CLOSE_CONNECTION, null, null, null);
-    Message four = new Message(Message.MessageType.LEAVE_SERVER, null, null, null);
-    Message five = new Message(Message.MessageType.UPDATE_SERVER_DATA, null, null, null);
+//    Message zero = new Message(Message.MessageType.NEW_MESSAGE, null, null, null);
+//    Message one = new Message(Message.MessageType.EDIT_MESSAGE, null, null, null);
+//    Message two = new Message(Message.MessageType.DELETE_MESSAGE, null, null, null);
+//    Message three = new Message(Message.MessageType.CLOSE_CONNECTION, null, null, null);
+//    Message four = new Message(Message.MessageType.LEAVE_SERVER, null, null, null);
+//    Message five = new Message(Message.MessageType.UPDATE_SERVER_DATA, null, null, null);
 
     private boolean open = true;
     protected Thread t;
 
     public ServerMessaging() {
-        System.out.println("STARTING THREAD");
+//        System.out.println("STARTING THREAD");
         t = new Thread(this);
         t.setName("ServerMessaging");
         t.start();
@@ -57,7 +57,8 @@ public class ServerMessaging implements Runnable {
                         	
                         	break;
                         case LEAVE_SERVER:
-                        	
+                        	online.remove(i);
+//                        	push();
                         	break;
                         case UPDATE_SERVER_DATA: 
                         	break;

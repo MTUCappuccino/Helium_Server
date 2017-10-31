@@ -8,7 +8,7 @@ import java.util.Scanner;
 public class clientTester {
 
 	public static void main(String[] args) {
-		testLocalConnect(9090);
+		testLocalConnect(1024);
 	}
 
 	public static void testLocalConnect(int port) {
@@ -20,10 +20,10 @@ public class clientTester {
 			incoming(s, input1);
 			/* incoming paste */
 
-			outgoing(s, "4,0,2upa,");
+			outgoing(s, "0,0,,"); //4,4,2upa,Mega\n
 			/* outgoing paste */
 
-			outgoing(s, messOUT("1;3;1;tester1;test").toString());
+//			outgoing(s, messOUT("1;3;1;tester1;test").toString());
 
 			incoming(s, input1);
 
