@@ -115,7 +115,7 @@ public class ServerMessaging implements Runnable {
         int id = Integer.parseInt(unparsedSegments[1]);
         Message.ContentType contentType = Message.ContentType.values()[Integer.parseInt(unparsedSegments[2])];
         String sender = unparsedSegments[3];
-        String userMessage = unparsedSegments[4];
+        String userMessage = unparsedSegments[4];//spliter
         
         Message m = new Message(type, id, contentType, sender, System.currentTimeMillis(), userMessage);
         

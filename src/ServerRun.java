@@ -19,7 +19,7 @@ public class ServerRun {
 	public static void main(String[] args) {
 
 		Scanner input = new Scanner(System.in);
-		Sysp("Commands: make, help, shutdown,");
+		Sysp("Commands: make, help, shutdown, edit");
 		while (on) {
 			System.out.print("> "); // ADDED A LITTLE PROMPT
 			String command = input.nextLine().toLowerCase();
@@ -46,6 +46,8 @@ public class ServerRun {
 		case "help":
 			Sysp("HELP: prints this message");
 			Sysp("MAKE: will ask for inputs then make a server");
+			Sysp("EDIT: if a server is running allow you to update settings");
+			Sysp("SHUTDOWN: closes server and your server software");
 			break;
 		case "make":
 			if (!runningServer) {
@@ -57,6 +59,9 @@ public class ServerRun {
 		case "shutdown":
 			server.closeServer();
 			on = false;
+			break;
+		case "edit" :
+			edit(scanner);
 			break;
 		default:
 			Sysp("Invaild command");
@@ -128,6 +133,11 @@ public class ServerRun {
 		runningServer = true;
 	}
 
+	/**
+	 * 
+	 * @param port
+	 * @return
+	 */
 	private static boolean checkPortInUse(int port) {
 		ServerSocket listener;
 
@@ -140,6 +150,40 @@ public class ServerRun {
 		}
 	}
 
+	private static void edit(Scanner input) {
+		if (!runningServer) {
+			Sysp("No server running to edit...");
+			return;
+		}
+		
+		Sysp("What do you want to edit: Color, Icon, Name");
+		String answer = input.nextLine().toLowerCase(); 
+		
+		switch (answer) {
+		case "color" :
+			setColor(input);
+			break;
+		case "icon" :
+			Sysp("Enter URL of Icon");
+			String URL = input.nextLine();
+			server.setIconURL(URL);
+			break;
+		case "name" :
+			Sysp("Enter new server name: ");
+			String name = input.nextLine();
+			server.setName(name);
+			break;
+		default :
+			Sysp("Invaild command");
+		}
+		
+	}
+	
+	/**
+	 * 
+	 * @param port
+	 * @return
+	 */
 	private static int autoPort(int port) {
 
 		while (checkPortInUse(port)) {
@@ -149,6 +193,10 @@ public class ServerRun {
 		return port;
 	}
 	
+	/**
+	 * 
+	 * @param input
+	 */
 	private static void setColor(Scanner input) {
 		String color ="";
 		String answer;

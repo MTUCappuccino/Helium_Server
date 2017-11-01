@@ -23,7 +23,7 @@ public class Server implements Runnable {
 	private String password = "";
 	//Default server color is black
 	private String hexColor = "000000";
-	private String customBack = "NULL";
+	private String IconURL = "NULL";
 
 	public boolean public_;
 	Thread t; //= new Thread(this);
@@ -181,7 +181,7 @@ public class Server implements Runnable {
 	 * @throws IOException
 	 */
 	private void outSetup(Person person) throws IOException {
-		person.getOutput().write(serverName + ";" + hexColor + ";" + customBack + "\n");
+		person.getOutput().write(serverName + ";" + hexColor + ";" + IconURL + "\n");
 		person.getOutput().flush();
 	}
 
@@ -207,19 +207,7 @@ public class Server implements Runnable {
 	}
 	
 	private String createServerType() {
-		if(handles == true) {
-			if(passes == true) {
-				return "11";
-			}else {
-				return "10";
-			}
-		} else {
-			if (passes == true) {
-				return "01";
-			}else {
-				return "00";
-			}
-		}
+		return (handles ? "1" : "0") + (passes ? "1" : "0");
 	}
 
 	// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ALL BELOW ARE SET, GET, CHECK// METHODS/////////////////////////////////
@@ -288,5 +276,9 @@ public class Server implements Runnable {
 	 */
 	public void setHexColor(String x) {
 		hexColor = x;
+	}
+	
+	public void setIconURL(String x) {
+		IconURL = x;
 	}
 }
