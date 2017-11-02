@@ -48,7 +48,7 @@ public class ServerRun {
 			Sysp("MAKE: will ask for inputs then make a server");
 			Sysp("EDIT: if a server is running allow you to update settings");
 			Sysp("SHUTDOWN: closes server and your server software");
-			
+			Sysp("STATS: prints some stats about your server if running");
 			break;
 		case "make":
 			if (!runningServer) {
@@ -58,6 +58,7 @@ public class ServerRun {
 			}
 			break;
 		case "shutdown":
+			if(runningServer)
 			server.closeServer();
 			on = false;
 			break;
@@ -265,13 +266,19 @@ public class ServerRun {
 					Sysp("Invaild color format: Setting color to default");
 					color = "000000";
 				}
+			} else {
+				color = "000000";
 			}
 		}
 		server.setHexColor(color);
 	}
 	
 	private static void stats() {
-		Sysp("Number of users that have connected: " + server.messaging.online.size());
+		if(!runningServer) {
+			Sysp("No server running to get info about...");
+			return;
+		}
+		Sysp("Number of users that are online: " + server.messaging.online.size());
 		Sysp("Number of messages sent: " + server.getMessagesSent());
 	}
 

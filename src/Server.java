@@ -312,7 +312,7 @@ public class Server implements Runnable {
 	 */
 	private void ghostCheck(Person person) {
 		
-		for (int i = 0, g = messaging.offline.size(); i <= g; i++ ) {
+		for (int i = 0, g = messaging.offline.size(); i < g; i++ ) {
 			if(messaging.offline.get(i).getHandle().equals(person.getHandle())) {
 				
 				String match = messaging.messQueue.messDump(messaging.offline.get(i).getLastKnown());
@@ -322,7 +322,7 @@ public class Server implements Runnable {
 				int min = Integer.parseInt(split[0]);
 				int max = Integer.parseInt(split[1]);
 				
-				for (;min <= max; min++) {
+				for (;min < max; min++) {
 					try {
 						messaging.tinyPush(messaging.messQueue.get(min), person);
 					} catch (IOException e) {
