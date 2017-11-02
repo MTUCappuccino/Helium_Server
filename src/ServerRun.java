@@ -19,7 +19,7 @@ public class ServerRun {
 	public static void main(String[] args) {
 
 		Scanner input = new Scanner(System.in);
-		Sysp("Commands: make, help, shutdown, edit");
+		Sysp("Commands: make, help, shutdown, edit...");
 		while (on) {
 			System.out.print("> "); // ADDED A LITTLE PROMPT
 			String command = input.nextLine().toLowerCase();
@@ -48,6 +48,7 @@ public class ServerRun {
 			Sysp("MAKE: will ask for inputs then make a server");
 			Sysp("EDIT: if a server is running allow you to update settings");
 			Sysp("SHUTDOWN: closes server and your server software");
+			
 			break;
 		case "make":
 			if (!runningServer) {
@@ -62,6 +63,9 @@ public class ServerRun {
 			break;
 		case "edit" :
 			edit(scanner);
+			break;
+		case "stats" :
+			stats();
 			break;
 		default:
 			Sysp("Invaild command");
@@ -127,7 +131,19 @@ public class ServerRun {
 		
 		//sets color of server
 		setColor(input);
-
+		
+		//set Icon
+		Sysp("Set custom Icon with URL? (Y/N): ");
+		answer = input.nextLine().toLowerCase(); 
+		
+		//Checking Icon answer
+		if (answer.equals("y") || answer.equals("yes")) {
+			Sysp("Enter URL of Icon: ");
+			String URL = input.nextLine();
+			if (!URL.equals("")) 
+			server.setIconURL(URL);
+		}
+		
 		//opens that server
 		server.openServer();
 		runningServer = true;
@@ -162,16 +178,19 @@ public class ServerRun {
 		switch (answer) {
 		case "color" :
 			setColor(input);
+//			server.update();
 			break;
 		case "icon" :
-			Sysp("Enter URL of Icon");
+			Sysp("Enter URL of Icon: ");
 			String URL = input.nextLine();
 			server.setIconURL(URL);
+//			server.update();
 			break;
 		case "name" :
 			Sysp("Enter new server name: ");
 			String name = input.nextLine();
 			server.setName(name);
+//			server.update();
 			break;
 		default :
 			Sysp("Invaild command");
@@ -249,6 +268,11 @@ public class ServerRun {
 			}
 		}
 		server.setHexColor(color);
+	}
+	
+	private static void stats() {
+		Sysp("Number of users that have connected: " + server.messaging.online.size());
+		Sysp("Number of messages sent: " + server.getMessagesSent());
 	}
 
 }

@@ -7,24 +7,32 @@ public class CircleQue {
 	}
 
 	private Message[] Queue;
-	private int index = 0;
-	private int count = 0;
+	private int minDex = 0;
+	public int count = 0;
 	private int hold;
 	
 	public void add(Message mess) {
-		int realDex = index % hold;
+		if (count > hold) {
+			minDex += 1;
+		}
+		int realDex = count % hold;
 		count += 1;
 		Queue[realDex] = mess;
 	}
 	
 	public Message get(int num) {
-		if (num < count - hold) {
+		if (num < minDex) {
 			return null;
 		}
 		if (num > count) {
 			return null;
 		}
-		int realDex = index % hold;
+		int realDex = count % hold;
 		return Queue[realDex];
+	}
+	
+	public String messDump(int lastKnown) {
+		return (lastKnown < minDex ? minDex + "," : lastKnown + ",") + count;
+		
 	}
 }

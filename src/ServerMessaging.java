@@ -9,7 +9,9 @@ import java.util.logging.Logger;
 public class ServerMessaging implements Runnable {
 
     ArrayList<Person> online = new ArrayList<Person>();
+    ArrayList<Ghost> offline = new ArrayList<Ghost>();
     protected CircleQue messQueue = new CircleQue(300);
+    public int messagesSent = 0;
     
 //    Message zero = new Message(Message.MessageType.NEW_MESSAGE, null, null, null);
 //    Message one = new Message(Message.MessageType.EDIT_MESSAGE, null, null, null);
@@ -38,7 +40,7 @@ public class ServerMessaging implements Runnable {
                     	String mess = online.get(i).getInput().readLine();
                         Message m = MessIN(mess);
                         
-                        messQueue.add(m);
+                        
                        
                         // add to queue
                         
@@ -47,6 +49,9 @@ public class ServerMessaging implements Runnable {
                         switch (m.getType()) {
                         
                         case NEW_MESSAGE :
+                        	m.setId(messQueue.count);
+                        	messQueue.add(m);
+                        	messagesSent += 1;
                         	push(m);
                         	break;
                         case EDIT_MESSAGE :
@@ -57,8 +62,17 @@ public class ServerMessaging implements Runnable {
                         	
                         	break;
                         case LEAVE_SERVER:
+                        	
+                        	Message left = new Message(Message.MessageType.NEW_MESSAGE,
+									Message.ContentType.TEXT, "Server", 
+									("User" +online.get(i).getHandle() +"left\n"));
+                        	
+                        	Ghost ghost = new Ghost(online.get(i), messQueue.count);
+                        	
+                        	offline.add(ghost);
                         	online.remove(i);
-//                        	push();
+                        	
+                        	push(left);
                         	break;
                         case UPDATE_SERVER_DATA: 
                         	break;
@@ -95,12 +109,17 @@ public class ServerMessaging implements Runnable {
      * @throws IOException
      */
     protected void push(Message message) throws IOException {
-    	System.out.println("PUSHING");
+//    	System.out.println("PUSHING");
         for (int i = 0; i < online.size(); i++) {
-            System.out.println("Sending to: " + online.get(i).getHandle());
+//            System.out.println("Sending to: " + online.get(i).getHandle());
             online.get(i).getOutput().write(message.toString());
             online.get(i).getOutput().flush();
         }
+    }
+    
+    protected void tinyPush(Message message, Person person) throws IOException {
+    	person.getOutput().write(message.toString());
+    	person.getOutput().flush();
     }
     
     public boolean closeMess() {
@@ -121,4 +140,5 @@ public class ServerMessaging implements Runnable {
         
         return m;
     }
+    
 }

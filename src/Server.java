@@ -27,7 +27,7 @@ public class Server implements Runnable {
 
 	public boolean public_;
 	Thread t; //= new Thread(this);
-	ServerMessaging online = new ServerMessaging();
+	ServerMessaging messaging = new ServerMessaging();
 
 	/**
 	 * Server
@@ -78,7 +78,7 @@ public class Server implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		online.close();
+		messaging.close();
 		return true;
 	}
 
@@ -98,9 +98,9 @@ public class Server implements Runnable {
 			open = true;
 			try {
 				while (open) {
-					System.out.println("Waiting for a client...");
+//					System.out.println("Waiting for a client...");
 					Socket socket = listener.accept();
-					System.out.println("Accepted a socket...");
+//					System.out.println("Accepted a socket...");
 					System.out.println();
 					
 					try {
@@ -110,8 +110,16 @@ public class Server implements Runnable {
 
 						if (person.getStatus()) {
 							outSetup(person);
-							online.online.add(person);
-//							outServerAll("0,1,,," + person.getHandle() + " joined\n");
+							messaging.online.add(person);
+							
+							Message welcome = new Message(Message.MessageType.NEW_MESSAGE,
+									Message.ContentType.TEXT, "Server", 
+									(handles ? person.getHandle() + "joined\n" : "User joined\n"));
+							
+							outServerAll(welcome);
+							System.out.print((handles ? person.getHandle() + "joined\n" : "User joined\n"));
+							
+							ghostCheck(person);
 
 						} else {
 							outSeverMessage(person, "invalid_password");
@@ -119,7 +127,7 @@ public class Server implements Runnable {
 					} finally {
 
 					}
-
+					System.out.print("");
 				}
 
 			} finally {
@@ -199,7 +207,7 @@ public class Server implements Runnable {
 
 	private void outServerAll(Message mess) {
 		try {
-			online.push(mess);
+			messaging.push(mess);
 		} catch (IOException e) {
 			System.out.println("Failed Server push\n");
 			e.printStackTrace();
@@ -208,6 +216,12 @@ public class Server implements Runnable {
 	
 	private String createServerType() {
 		return (handles ? "1" : "0") + (passes ? "1" : "0");
+	}
+	
+	public void update() {
+		Message update = new Message(Message.MessageType.UPDATE_SERVER_DATA,
+				Message.ContentType.TEXT, "Server", "serverName" + ";" + hexColor + ";" + IconURL + "\n" );
+		outServerAll(update);
 	}
 
 	// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ALL BELOW ARE SET, GET, CHECK// METHODS/////////////////////////////////
@@ -280,5 +294,43 @@ public class Server implements Runnable {
 	
 	public void setIconURL(String x) {
 		IconURL = x;
+	}
+	
+	/**
+	 * getMessagesSent
+	 * stat method, returns user to user number of messages
+	 * @return int number of messages
+	 */
+	public int getMessagesSent() {
+		return messaging.messagesSent;
+	}
+	
+	/**
+	 * ghostCheck
+	 * sees if someone was this handle, and gives them missed messages
+	 * @param person
+	 */
+	private void ghostCheck(Person person) {
+		
+		for (int i = 0, g = messaging.offline.size(); i <= g; i++ ) {
+			if(messaging.offline.get(i).getHandle().equals(person.getHandle())) {
+				
+				String match = messaging.messQueue.messDump(messaging.offline.get(i).getLastKnown());
+				messaging.offline.remove(i);
+				
+				String[] split = match.split(",");
+				int min = Integer.parseInt(split[0]);
+				int max = Integer.parseInt(split[1]);
+				
+				for (;min <= max; min++) {
+					try {
+						messaging.tinyPush(messaging.messQueue.get(min), person);
+					} catch (IOException e) {
+						System.out.println("Ghost Update fail");
+					}
+				}
+				return;
+			}
+		}
 	}
 }
