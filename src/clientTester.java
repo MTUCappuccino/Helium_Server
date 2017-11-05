@@ -7,11 +7,19 @@ import java.util.Scanner;
 
 public class clientTester {
 
-	public static void main(String[] args) {
-		testLocalConnect(1024);
+	public String t1;
+	
+	public clientTester(int port) {
+		t1 =testLocalConnect(port);
 	}
+	
+//	public static void main(String[] args) {
+//		t1 = testLocalConnect(9090);
+//		System.out.println(t1);
+//	}
 
-	public static void testLocalConnect(int port) {
+	
+	public static String testLocalConnect(int port) {
 
 		try {
 			Socket s = new Socket("localhost", port);
@@ -20,23 +28,20 @@ public class clientTester {
 			incoming(s, input1);
 			/* incoming paste */
 
-			outgoing(s, "0,0,,"); //4,4,2upa,Mega\n
+			outgoing(s, "0,0,,\n"); //4,4,2upa,Mega\n
 			/* outgoing paste */
 
 //			outgoing(s, messOUT("1;3;1;tester1;test").toString());
 
-			incoming(s, input1);
-
+			return incoming(s, input1);
 			// s.close();
-			while (true)
-				;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
+		return null;
 	}
 
-	private static void incoming(Socket s, BufferedReader input1) throws IOException {
+	private static String incoming(Socket s, BufferedReader input1) throws IOException {
 		
 
 		boolean t = true;
@@ -44,11 +49,11 @@ public class clientTester {
 		while (t) {
 			if (input1.ready()) {
 				String answer = input1.readLine();
-				System.out.println(answer);
-				t = false;
+				return answer;
 			} else {
 			}
 		}
+		return null;
 
 	}
 

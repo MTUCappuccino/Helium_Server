@@ -207,7 +207,8 @@ public class Server implements Runnable {
 
 		p.setHandle(answer.substring(junkread, junkread + nameLength));
 
-		String pass = answer.substring(junkread + nameLength, junkread + nameLength + passLength);
+		String pass = answer.substring(junkread + nameLength+ 1, junkread + nameLength + passLength+ 1);
+//		System.out.println(pass);
 
 		if (serverType.equals("01") || serverType.equals("11")) {
 		p.setStatus(checkPassword(pass));
