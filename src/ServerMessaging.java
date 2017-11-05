@@ -8,23 +8,25 @@ import java.util.logging.Logger;
 
 public class ServerMessaging implements Runnable {
 
-    ArrayList<Person> online = new ArrayList<Person>();
-    ArrayList<Ghost> offline = new ArrayList<Ghost>();
+    //Tracks those online
+	ArrayList<Person> online = new ArrayList<Person>();
+    
+	//Tracks those who "died" LOL
+	ArrayList<Ghost> offline = new ArrayList<Ghost>();
+    
+	//Tracks up to the last 300 hundred messages
     protected CircleQue messQueue = new CircleQue(300);
+    
+    //Tracks how many message sent.
     public int messagesSent = 0;
     
-//    Message zero = new Message(Message.MessageType.NEW_MESSAGE, null, null, null);
-//    Message one = new Message(Message.MessageType.EDIT_MESSAGE, null, null, null);
-//    Message two = new Message(Message.MessageType.DELETE_MESSAGE, null, null, null);
-//    Message three = new Message(Message.MessageType.CLOSE_CONNECTION, null, null, null);
-//    Message four = new Message(Message.MessageType.LEAVE_SERVER, null, null, null);
-//    Message five = new Message(Message.MessageType.UPDATE_SERVER_DATA, null, null, null);
-
+    //Tracks if this thread is running/ control variable
     private boolean open = true;
+    
+    //Tracking this thread
     protected Thread t;
 
     public ServerMessaging() {
-//        System.out.println("STARTING THREAD");
         t = new Thread(this);
         t.setName("ServerMessaging");
         t.start();
@@ -78,13 +80,12 @@ public class ServerMessaging implements Runnable {
                         	break;
                        
                         }
-//                        if(m.getType() == zero.getType()) {
-//                        	push(m);
-//                        }
                         
-                        
-                        
+                    } else {
+                    	//check that person still good
+                    	online.get(i).getSocket().isClosed();
                     }
+                    
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -109,24 +110,40 @@ public class ServerMessaging implements Runnable {
      * @throws IOException
      */
     protected void push(Message message) throws IOException {
-//    	System.out.println("PUSHING");
         for (int i = 0; i < online.size(); i++) {
-//            System.out.println("Sending to: " + online.get(i).getHandle());
             online.get(i).getOutput().write(message.toString());
             online.get(i).getOutput().flush();
         }
     }
     
+    /**
+     * tinyPush
+     * pushes to a single person
+     * @param message
+     * @param person
+     * @throws IOException
+     */
     protected void tinyPush(Message message, Person person) throws IOException {
     	person.getOutput().write(message.toString());
     	person.getOutput().flush();
     }
     
+    /**
+     * closeMess
+     * closes messaging thread
+     * @return
+     */
     public boolean closeMess() {
     	open = false;
     	return true;
     }
     
+    /**
+     * MessIN
+     * takes in message from client then splits into parts, creates new message on server end
+     * @param mess String in client message format
+     * @return Message
+     */
     private Message MessIN(String mess) {
     	String[] unparsedSegments = mess.split(";");
     	
@@ -139,6 +156,31 @@ public class ServerMessaging implements Runnable {
         Message m = new Message(type, id, contentType, sender, System.currentTimeMillis(), userMessage);
         
         return m;
+    }
+    
+    protected void messageDecsSERVER(Message m) throws IOException {
+    	switch (m.getType()) {
+        
+        case NEW_MESSAGE :
+        	m.setId(messQueue.count);
+        	messQueue.add(m);
+        	messagesSent += 1;
+        	push(m);
+        	break;
+        case EDIT_MESSAGE :
+        	break;
+        case DELETE_MESSAGE:
+        	break;
+        case CLOSE_CONNECTION:
+        	
+        	break;
+        case LEAVE_SERVER:
+        	
+        	break;
+        case UPDATE_SERVER_DATA: 
+        	break;
+       
+        }
     }
     
 }

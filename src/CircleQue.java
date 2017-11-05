@@ -31,6 +31,12 @@ public class CircleQue {
 		return Queue[realDex];
 	}
 	
+	/**
+	 * messDump
+	 * checks if a ghost last seen message is valid
+	 * @param lastKnown
+	 * @return
+	 */
 	public String messDump(int lastKnown) {
 		return (lastKnown < minDex ? minDex + "," : lastKnown + ",") + count;
 		

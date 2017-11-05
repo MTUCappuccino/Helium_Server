@@ -6,16 +6,18 @@ import java.util.Scanner;
 
 /**
  * ServerRun Command line maker for launching a server
- * 
+ * 		Make server, returns some stats, some admin commands
  * @author Lucas_Catron
  *
  */
 public class ServerRun {
 
+	//Global tracking variables
 	static Server server;
 	private static boolean runningServer = false;
 	private static boolean on = true;
 
+	//Runs this thread until shutdown
 	public static void main(String[] args) {
 
 		Scanner input = new Scanner(System.in);
@@ -32,7 +34,7 @@ public class ServerRun {
 	/**
 	 * Sysp System print short cut statement
 	 * 
-	 * @param x
+	 * @param x String to print
 	 */
 	private static void Sysp(String x) {
 		System.out.println(x);
@@ -40,6 +42,8 @@ public class ServerRun {
 
 	/**
 	 * takeCommand takes string input and decides appropriate action
+	 * @param command Sting to compare in switch statement
+	 * @param scanner Scanner to pass down for further inputs
 	 */
 	private static void takeCommand(String command, Scanner scanner) {
 		switch (command) {
@@ -74,10 +78,11 @@ public class ServerRun {
 		}
 	}
 
-	/**
-	 * makeServer asks for inputs to make a required server, then launches join
-	 * thread
-	 */
+/**
+ * makeServer asks for inputs to make a required server, then launches join
+ * thread
+ * @param input Scanner for further inputs
+ */
 	private static void makeServer(Scanner input) {
 		boolean handles;
 		boolean passes;
@@ -119,7 +124,7 @@ public class ServerRun {
 			answer = input.nextLine().toLowerCase(); 
 			if (answer.equals("y") || answer.equals("yes")) {
 				port = autoPort(port);
-				if (port == -1) {break;}
+				if (port == -1) {on = false;break;}
 				Sysp("Now using port: " + port);
 			} else {
 				System.out.println("New port: ");
@@ -151,9 +156,10 @@ public class ServerRun {
 	}
 
 	/**
-	 * 
-	 * @param port
-	 * @return
+	 * checkPortInUse
+	 * checks to see if the port is in use
+	 * @param port Int of port
+	 * @return true if cannot access for any reason, false if can accsess and close
 	 */
 	private static boolean checkPortInUse(int port) {
 		ServerSocket listener;
@@ -167,6 +173,11 @@ public class ServerRun {
 		}
 	}
 
+	/**
+	 * edit
+	 * if the server is running allows editing of some configurable options
+	 * @param input Scanner to allow for further input
+	 */
 	private static void edit(Scanner input) {
 		if (!runningServer) {
 			Sysp("No server running to edit...");
@@ -200,9 +211,10 @@ public class ServerRun {
 	}
 	
 	/**
-	 * 
-	 * @param port
-	 * @return
+	 * autoPort
+	 * (UNSAFE) start at specified port, increases by 1, until a port that is open is found.
+	 * @param port INT of port to try from.
+	 * @return open port number of negative 1 for failure.
 	 */
 	private static int autoPort(int port) {
 
@@ -214,7 +226,9 @@ public class ServerRun {
 	}
 	
 	/**
-	 * 
+	 * setColor
+	 * lets you set clients colors. First asks if want to choose from preselected colors
+	 * then if you want to specify you own hexadecimal color.
 	 * @param input
 	 */
 	private static void setColor(Scanner input) {
@@ -273,6 +287,10 @@ public class ServerRun {
 		server.setHexColor(color);
 	}
 	
+	/**
+	 * stats
+	 * prints stats about the server
+	 */
 	private static void stats() {
 		if(!runningServer) {
 			Sysp("No server running to get info about...");
