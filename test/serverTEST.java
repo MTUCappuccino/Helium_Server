@@ -11,47 +11,82 @@ import org.junit.Test;
 
 public class serverTEST {
 
-	@Test
-	public void buildTest() {
-		Server test = new Server(9090, "TEST", "");
-	}
+	Server test00;
+	Server test11;
+
 
 	@Test
 	public void RunTest1() {
-		Server test = new Server(9090, "TEST", "");
-		test.openServer();
-		test.closeServer();
+		test00 = new Server(9090, "TEST", "", false, false);
+		test00.openServer();
 	}
 	
 	@Test
-	public void connectTest() {
-
-		assertEquals("TEST;000000;NULL", serverTEST.test(9090));
+	public void connectTest1() {
+		String cTest1 = testLocalConnect(9090, "", "");
+		
+		if(!cTest1.equals("TEST;000000;NULL")) {
+			fail();
+		}
 	}
 	
-	public static String test(int port) {
+	
+	@Test
+	public void RunTest2() {
+		test11 = new Server(9091, "TEST1", "Mega", true, true);
+		test11.openServer();
+	}
+	@Test
+	public void connectTest2() {
+		String cTest2 = testLocalConnect(9091, "2upa", "Mega");
+		
+		if(!cTest2.equals("TEST1;000000;NULL")) {
+			fail();
+		}
+	}
+	
+	@Test
+	public void RunTest3() {
+		test11 = new Server(9092, "TEST1", "HugeHugePassword of doom12", true, true);
+		test11.setHexColor("ffffff");
+		test11.setIconURL("lolcat.com");
+		test11.openServer();
+	}
+	@Test
+	public void connectTest3() {
+		String cTest2 = testLocalConnect(9092, "2upa", "HugeHugePassword of doom12");
+		
+		if(!cTest2.equals("TEST1;ffffff;lolcat.com")) {
+			fail();
+		}
+	}
+	
+	
+	
+	public static String testLocalConnect(int port, String handle, String pass) {
 
-		String answer = "";
 		try {
 			Socket s = new Socket("localhost", port);
+			BufferedReader input1 = new BufferedReader(new InputStreamReader(s.getInputStream()));
 
-			incoming(s);
+			incoming(s, input1);
 			/* incoming paste */
 
-			outgoing(s);
+			outgoing(s, handle.length()+","+pass.length()+","+handle+","+pass+"\n"); //4,4,2upa,Mega\n
 			/* outgoing paste */
 
-			answer = incoming(s);
+//			outgoing(s, messOUT("1;3;1;tester1;test").toString());
 
+			return incoming(s, input1);
+			// s.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		return answer;
+		return null;
 	}
-	
-	private static String incoming(Socket s) throws IOException {
-		BufferedReader input1 = new BufferedReader(new InputStreamReader(s.getInputStream()));
+
+	private static String incoming(Socket s, BufferedReader input1) throws IOException {
+		
 
 		boolean t = true;
 
@@ -62,14 +97,28 @@ public class serverTEST {
 			} else {
 			}
 		}
-		return "";
+		return null;
 
 	}
 
-	private static void outgoing(Socket s) throws IOException {
+	private static void outgoing(Socket s, String sting) throws IOException {
 		PrintWriter out = new PrintWriter(s.getOutputStream(), true);
-		out.println("4,0,2upa,");
+		out.println(sting);
 		out.flush();
 	}
+	
+	private static Message messOUT(String mess) {
+    	String[] unparsedSegments = mess.split(";");
+    	
+        Message.MessageType type = Message.MessageType.values()[Integer.parseInt(unparsedSegments[0])];
+        int id = Integer.parseInt(unparsedSegments[1]);
+        Message.ContentType contentType = Message.ContentType.values()[Integer.parseInt(unparsedSegments[2])];
+        String sender = unparsedSegments[3];
+        String userMessage = unparsedSegments[4];
+        
+        Message m = new Message(type, id, contentType, sender, System.currentTimeMillis(), userMessage);
+        
+        return m;
+    }
 	
 }
