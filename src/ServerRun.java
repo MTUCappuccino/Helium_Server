@@ -1,27 +1,27 @@
 
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Scanner;
 
 /**
- * ServerRun Command line maker for launching a server
- * 		Make server, returns some stats, some admin commands
+ * ServerRun Command line maker for launching a server Make server, returns some
+ * stats, some admin commands
+ * 
  * @author Lucas_Catron
  *
  */
 public class ServerRun {
 
-	//Global tracking variables
+	// Global tracking variables
 	static Server server;
 	private static boolean runningServer = false;
 	private static boolean on = true;
 
-	//Runs this thread until shutdown
+	// Runs this thread until shutdown
 	public static void main(String[] args) {
 
 		Scanner input = new Scanner(System.in);
-		Sysp("Commands: make, help, shutdown, edit...");
+		Sysp("Commands: close, make, help, shutdown, edit...");
 		while (on) {
 			System.out.print("> "); // ADDED A LITTLE PROMPT
 			String command = input.nextLine().toLowerCase();
@@ -34,7 +34,8 @@ public class ServerRun {
 	/**
 	 * Sysp System print short cut statement
 	 * 
-	 * @param x String to print
+	 * @param x
+	 *            String to print
 	 */
 	private static void Sysp(String x) {
 		System.out.println(x);
@@ -42,8 +43,11 @@ public class ServerRun {
 
 	/**
 	 * takeCommand takes string input and decides appropriate action
-	 * @param command Sting to compare in switch statement
-	 * @param scanner Scanner to pass down for further inputs
+	 * 
+	 * @param command
+	 *            Sting to compare in switch statement
+	 * @param scanner
+	 *            Scanner to pass down for further inputs
 	 */
 	private static void takeCommand(String command, Scanner scanner) {
 		switch (command) {
@@ -53,6 +57,7 @@ public class ServerRun {
 			Sysp("EDIT: if a server is running allow you to update settings");
 			Sysp("SHUTDOWN: closes server and your server software");
 			Sysp("STATS: prints some stats about your server if running");
+			Sysp("CLOSE: Closes the current server running");
 			break;
 		case "make":
 			if (!runningServer) {
@@ -62,14 +67,23 @@ public class ServerRun {
 			}
 			break;
 		case "shutdown":
-			if(runningServer)
-			server.closeServer();
+			if (runningServer) {
+				server.closeServer();
+				runningServer = false;
+			}
 			on = false;
 			break;
-		case "edit" :
+		case "close":
+			if (runningServer) {
+				server.closeServer();
+				runningServer = false;
+				Sysp("Closed Server");
+			}
+			break;
+		case "edit":
 			edit(scanner);
 			break;
-		case "stats" :
+		case "stats":
 			stats();
 			break;
 		default:
@@ -78,88 +92,97 @@ public class ServerRun {
 		}
 	}
 
-/**
- * makeServer asks for inputs to make a required server, then launches join
- * thread
- * @param input Scanner for further inputs
- */
+	/**
+	 * makeServer asks for inputs to make a required server, then launches join
+	 * thread
+	 * 
+	 * @param input
+	 *            Scanner for further inputs
+	 */
 	private static void makeServer(Scanner input) {
 		boolean handles;
 		boolean passes;
 		String pass = "";
-		
-		//Gets port number
+
+		// Gets port number
 		Sysp("Port to open: ");
 		int port = Integer.parseInt(input.nextLine());
-		
-		//Gets Server name
+
+		// Gets Server name
 		Sysp("Server Name: ");
-		String name = input.nextLine(); 
-		
-		//Asks about passwords
+		String name = input.nextLine();
+
+		// Asks about passwords
 		Sysp("Password required entry?(Y/N): ");
-		String answer = input.nextLine().toLowerCase(); 
-		
-		//Checking password answer
+		String answer = input.nextLine().toLowerCase();
+
+		// Checking password answer
 		if (answer.equals("y") || answer.equals("yes")) {
 			passes = true;
 			Sysp("Password: ");
-			pass = input.nextLine(); 
-		}else{
-			passes =false;
+			pass = input.nextLine();
+		} else {
+			passes = false;
 		}
-		
-		//Asks about handles
+
+		// Asks about handles
 		Sysp("Do users require handles?(Y/N): ");
-		answer = input.nextLine().toLowerCase(); 
-		
-		//Checking handles answer
+		answer = input.nextLine().toLowerCase();
+
+		// Checking handles answer
 		if (answer.equals("y") || answer.equals("yes")) {
 			handles = true;
-		} else {handles = false;}
+		} else {
+			handles = false;
+		}
 
-		//Checks given port availability
+		// Checks given port availability
 		while (checkPortInUse(port)) {
 			Sysp("Port in use. AutoPort? Y/N : ");
-			answer = input.nextLine().toLowerCase(); 
+			answer = input.nextLine().toLowerCase();
 			if (answer.equals("y") || answer.equals("yes")) {
 				port = autoPort(port);
-				if (port == -1) {on = false;break;}
+				if (port == -1) {
+					on = false;
+					break;
+				}
 				Sysp("Now using port: " + port);
 			} else {
 				System.out.println("New port: ");
 				port = Integer.parseInt(input.nextLine());
 			}
 		}
-		
-		//Creates new server with given inputs
+
+		// Creates new server with given inputs
 		server = new Server(port, name, pass, passes, handles);
-		
-		//sets color of server
+
+		// sets color of server
 		setColor(input);
-		
-		//set Icon
+
+		// set Icon
 		Sysp("Set custom Icon with URL? (Y/N): ");
-		answer = input.nextLine().toLowerCase(); 
-		
-		//Checking Icon answer
+		answer = input.nextLine().toLowerCase();
+
+		// Checking Icon answer
 		if (answer.equals("y") || answer.equals("yes")) {
 			Sysp("Enter URL of Icon: ");
 			String URL = input.nextLine();
-			if (!URL.equals("")) 
-			server.setIconURL(URL);
+			if (!URL.equals(""))
+				server.setIconURL(URL);
 		}
-		
-		//opens that server
+
+		// opens that server
 		server.openServer();
 		runningServer = true;
 	}
 
 	/**
-	 * checkPortInUse
-	 * checks to see if the port is in use
-	 * @param port Int of port
-	 * @return true if cannot access for any reason, false if can accsess and close
+	 * checkPortInUse checks to see if the port is in use
+	 * 
+	 * @param port
+	 *            Int of port
+	 * @return true if cannot access for any reason, false if can accsess and
+	 *         close
 	 */
 	private static boolean checkPortInUse(int port) {
 		ServerSocket listener;
@@ -174,74 +197,79 @@ public class ServerRun {
 	}
 
 	/**
-	 * edit
-	 * if the server is running allows editing of some configurable options
-	 * @param input Scanner to allow for further input
+	 * edit if the server is running allows editing of some configurable options
+	 * 
+	 * @param input
+	 *            Scanner to allow for further input
 	 */
 	private static void edit(Scanner input) {
 		if (!runningServer) {
 			Sysp("No server running to edit...");
 			return;
 		}
-		
+
 		Sysp("What do you want to edit: Color, Icon, Name");
-		String answer = input.nextLine().toLowerCase(); 
-		
+		String answer = input.nextLine().toLowerCase();
+
 		switch (answer) {
-		case "color" :
+		case "color":
 			setColor(input);
-//			server.update();
+			server.update();
 			break;
-		case "icon" :
+		case "icon":
 			Sysp("Enter URL of Icon: ");
 			String URL = input.nextLine();
 			server.setIconURL(URL);
-//			server.update();
+			server.update();
 			break;
-		case "name" :
+		case "name":
 			Sysp("Enter new server name: ");
 			String name = input.nextLine();
 			server.setName(name);
-//			server.update();
+			server.update();
 			break;
-		default :
+		default:
 			Sysp("Invaild command");
 		}
-		
+
 	}
-	
+
 	/**
-	 * autoPort
-	 * (UNSAFE) start at specified port, increases by 1, until a port that is open is found.
-	 * @param port INT of port to try from.
+	 * autoPort (UNSAFE) start at specified port, increases by 1, until a port
+	 * that is open is found.
+	 * 
+	 * @param port
+	 *            INT of port to try from.
 	 * @return open port number of negative 1 for failure.
 	 */
 	private static int autoPort(int port) {
 
 		while (checkPortInUse(port)) {
 			port += 1;
-			if (port >= 9000) {return -1;}
+			if (port >= 9000) {
+				return -1;
+			}
 		}
 		return port;
 	}
-	
+
 	/**
-	 * setColor
-	 * lets you set clients colors. First asks if want to choose from preselected colors
-	 * then if you want to specify you own hexadecimal color.
+	 * setColor lets you set clients colors. First asks if want to choose from
+	 * preselected colors then if you want to specify you own hexadecimal color.
+	 * 
 	 * @param input
 	 */
 	private static void setColor(Scanner input) {
-		String color ="";
+		String color = "";
 		String answer;
-		
+
 		Sysp("Select a preset server color(DEFALUT:BLACK)?(Y/N): ");
 		answer = input.nextLine().toLowerCase();
-		
+
 		if (answer.equals("y") || answer.equals("yes")) {
 			Sysp("Colors: RED, BLUE, GREEN, ORANGE, PURPLE, BROWN, YELLOW, WHITE");
 			answer = input.nextLine().toLowerCase();
-			
+
 			switch (answer) {
 			case "red":
 				color = "b03a2e";
@@ -270,7 +298,7 @@ public class ServerRun {
 			default:
 				color = "000000";
 			}
-		}else {
+		} else {
 			Sysp("Would you like to enter 6 character hex format color code?(Y/N): ");
 			answer = input.nextLine().toLowerCase();
 			if (answer.equals("y") || answer.equals("yes")) {
@@ -286,18 +314,18 @@ public class ServerRun {
 		}
 		server.setHexColor(color);
 	}
-	
+
 	/**
-	 * stats
-	 * prints stats about the server
+	 * stats prints stats about the server
 	 */
 	private static void stats() {
-		if(!runningServer) {
+		if (!runningServer) {
 			Sysp("No server running to get info about...");
 			return;
 		}
 		Sysp("Number of users that are online: " + server.messaging.online.size());
 		Sysp("Number of messages sent: " + server.getMessagesSent());
+		Sysp("Number of messages edited: " + server.getMessEdited());
 	}
 
 }

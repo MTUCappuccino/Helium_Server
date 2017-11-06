@@ -31,6 +31,17 @@ public class CircleQue {
 		return Queue[realDex];
 	}
 	
+	public void set(int id, Message mess) {
+		if (id < minDex) {
+			return;
+		}
+		if (id > count) {
+			return;
+		}
+		int realDex = count % hold;
+		Queue[realDex] = mess;
+	}
+	
 	/**
 	 * messDump
 	 * checks if a ghost last seen message is valid

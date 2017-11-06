@@ -17,8 +17,9 @@ public class ServerMessaging implements Runnable {
 	//Tracks up to the last 300 hundred messages
     protected CircleQue messQueue = new CircleQue(300);
     
-    //Tracks how many message sent.
+    //Tracks stats.
     public int messagesSent = 0;
+    public int messEdited = 0;
     
     //Tracks if this thread is running/ control variable
     private boolean open = true;
@@ -57,6 +58,10 @@ public class ServerMessaging implements Runnable {
                         	push(m);
                         	break;
                         case EDIT_MESSAGE :
+                        	messEdited += 1;
+                        	push(m);
+                        	m.setType(Message.MessageType.NEW_MESSAGE);
+                        	messQueue.set(m.getId(), m);
                         	break;
                         case DELETE_MESSAGE:
                         	break;
@@ -83,7 +88,18 @@ public class ServerMessaging implements Runnable {
                         
                     } else {
                     	//check that person still good
-                    	online.get(i).getSocket().isClosed();
+                    	if(online.get(i).getSocket().isClosed() || online.get(i).getSocket().isOutputShutdown()) {
+                    		
+                    		Message disconnect = new Message(Message.MessageType.NEW_MESSAGE,
+									Message.ContentType.TEXT, "Server", 
+									("User" +online.get(i).getHandle() +"dissconnected\n"));
+                    		
+                    		Ghost ghost = new Ghost(online.get(i), messQueue.count);
+                    		
+                    		offline.add(ghost);
+                        	online.remove(i);
+                        	push(disconnect);
+                    	}
                     }
                     
                 } catch (IOException e) {
@@ -100,6 +116,17 @@ public class ServerMessaging implements Runnable {
     }
     
     public void close() {
+    	
+    	Message disconnect = new Message(Message.MessageType.CLOSE_CONNECTION,
+				Message.ContentType.TEXT, "Server", 
+				("I was shut down...\n"));
+    	
+    	try {
+			push(disconnect);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	
     	open = false;
     }
 

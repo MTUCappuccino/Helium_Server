@@ -130,38 +130,24 @@ public class Server implements Runnable {
 						
 						//Server to client for data request
 						initalOut(person);
-                                                
-                                                        do {
-                                                        //client to server with required info
-                                                        initalIn(person);
+						
+						//client to server with required info
+						initalIn(person);
 
-                                                        //Check to see if they sent the right info
-                                                        if (person.getStatus()) {
+						//Check to see if they sent the right info
+						if (person.getStatus()) {
+							welcome(person);
 
-                                                                //If true, send them server data
-                                                                outSetup(person);
-
-                                                                //Add them to the currently online users
-                                                                messaging.online.add(person);
-
-                                                                //Make welcome message
-                                                                Message welcome = new Message(Message.MessageType.NEW_MESSAGE,
-                                                                                Message.ContentType.TEXT, "Server", 
-                                                                                (handles ? person.getHandle() + "joined\n" : "User joined\n"));
-
-                                                                //Send welcome message
-                                                                messaging.messageDecsSERVER(welcome);
-
-                                                                //Tell server admin someone joined
-                                                                System.out.print((handles ? person.getHandle() + "joined\n" : "User joined\n"));
-
-                                                                //Check if the handle was that of a ghost
-                                                                ghostCheck(person);
-
-                                                        } else {
-                                                                outSeverMessage(person, "invalid_password");
-                                                        }
-                                                } while (!person.getStatus());
+						} else {
+							
+							outSeverMessage(person, "invalid_password");
+							initalIn(person);
+							
+							if (person.getStatus()) {
+								welcome(person);
+							}
+							
+						}
 					} finally {
 
 					}
@@ -229,6 +215,34 @@ public class Server implements Runnable {
 	private void outSetup(Person person) throws IOException {
 		person.getOutput().write(serverName + ";" + hexColor + ";" + IconURL + "\n");
 		person.getOutput().flush();
+	}
+	
+	/**
+	 * welcome
+	 * Sends out data, adds person to online, welcome message, server mess, ghost check.
+	 * @param person
+	 * @throws IOException
+	 */
+	private void welcome(Person person) throws IOException {
+		//If true, send them server data
+		outSetup(person);
+		
+		//Add them to the currently online users
+		messaging.online.add(person);
+		
+		//Make welcome message
+		Message welcome = new Message(Message.MessageType.NEW_MESSAGE,
+				Message.ContentType.TEXT, "Server", 
+				(handles ? person.getHandle() + "joined\n" : "User joined\n"));
+	
+		//Send welcome message
+		messaging.messageDecsSERVER(welcome);
+		
+		//Tell server admin someone joined
+		System.out.print((handles ? person.getHandle() + "joined\n" : "User joined\n"));
+		
+		//Check if the handle was that of a ghost
+		ghostCheck(person);
 	}
 
 	/**
@@ -356,6 +370,10 @@ public class Server implements Runnable {
 	 */
 	public int getMessagesSent() {
 		return messaging.messagesSent;
+	}
+	
+	public int getMessEdited() {
+		return messaging.messEdited;
 	}
 	
 	/**
