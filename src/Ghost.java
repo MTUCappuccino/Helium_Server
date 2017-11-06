@@ -18,6 +18,11 @@ public class Ghost {
 		return handle;
 	}
 	
+	/**
+	 * getLastKnown
+	 * gets the last know message ID of this ghost
+	 * @return int
+	 */
 	public int getLastKnown() {
 		return lastKnown;
 	}
