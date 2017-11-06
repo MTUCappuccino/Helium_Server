@@ -99,6 +99,6 @@ public class Message {
     
     @Override
     public String toString() {
-        return String.valueOf(type.getValue()) + "," + String.valueOf(id)  + "," + String.valueOf(contentType.getValue())+ "," + senderHandle  + "," + getSentTime() + "," + content + "\n";
+        return String.valueOf(type.getValue()) + ";" + String.valueOf(id)  + ";" + String.valueOf(contentType.getValue())+ ";" + senderHandle  + ";" + getSentTime() + ";" + content + "\n";
     }
 }

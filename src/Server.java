@@ -106,24 +106,26 @@ public class Server implements Runnable {
 					try {
 						Person person = new Person(socket);
 						initalOut(person);
-						initalIn(person);
+                                                do {
+                                                    initalIn(person);
 
-						if (person.getStatus()) {
-							outSetup(person);
-							messaging.online.add(person);
-							
-							Message welcome = new Message(Message.MessageType.NEW_MESSAGE,
-									Message.ContentType.TEXT, "Server", 
-									(handles ? person.getHandle() + "joined\n" : "User joined\n"));
-							
-							outServerAll(welcome);
-							System.out.print((handles ? person.getHandle() + "joined\n" : "User joined\n"));
-							
-							ghostCheck(person);
+                                                    if (person.getStatus()) {
+                                                            outSetup(person);
+                                                            messaging.online.add(person);
 
-						} else {
-							outSeverMessage(person, "invalid_password");
-						}
+                                                            Message welcome = new Message(Message.MessageType.NEW_MESSAGE,
+                                                                            Message.ContentType.TEXT, "Server", 
+                                                                            (handles ? person.getHandle() + " joined" : "User joined"));
+
+                                                            outServerAll(welcome);
+                                                            System.out.print((handles ? person.getHandle() + "joined\n" : "User joined\n"));
+
+                                                            ghostCheck(person);
+
+                                                    } else {
+                                                            outSeverMessage(person, "invalid_password\n");
+                                                    }
+                                                } while (!person.getStatus());
 					} finally {
 
 					}
