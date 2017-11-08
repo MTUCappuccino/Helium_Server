@@ -66,10 +66,6 @@ public class ServerMessaging implements Runnable {
                         case DELETE_MESSAGE:
                         	break;
                         case CLOSE_CONNECTION:
-                        	
-                        	break;
-                        case LEAVE_SERVER:
-                        	
                         	Message left = new Message(Message.MessageType.NEW_MESSAGE,
 									Message.ContentType.TEXT, "Server", 
 									("User" +online.get(i).getHandle() +"left\n"));
@@ -80,6 +76,9 @@ public class ServerMessaging implements Runnable {
                         	online.remove(i);
                         	
                         	push(left);
+                        	break;
+                        case LEAVE_SERVER:
+                        	
                         	break;
                         case UPDATE_SERVER_DATA: 
                         	break;
