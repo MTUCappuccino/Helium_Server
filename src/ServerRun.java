@@ -105,8 +105,8 @@ public class ServerRun {
 		String pass = "";
 
 		// Gets port number
-		Sysp("Port to open: ");
-		int port = Integer.parseInt(input.nextLine());
+		
+		int port = setPort(input);
 
 		// Gets Server name
 		Sysp("Server Name: ");
@@ -137,27 +137,14 @@ public class ServerRun {
 		}
 
 		// Checks given port availability
-		while (checkPortInUse(port)) {
-			Sysp("Port in use. AutoPort? Y/N : ");
-			answer = input.nextLine().toLowerCase();
-			if (answer.equals("y") || answer.equals("yes")) {
-				port = autoPort(port);
-				if (port == -1) {
-					on = false;
-					break;
-				}
-				Sysp("Now using port: " + port);
-			} else {
-				System.out.println("New port: ");
-				port = Integer.parseInt(input.nextLine());
-			}
-		}
 
-		// Creates new server with given inputs
-		server = new Server(port, name, pass, passes, handles);
+	
 
-		// sets color of server
-		setColor(input);
+	// Creates new server with given inputs
+	server = new Server(port,name,pass,passes,handles);
+
+	// sets color of server
+	setColor(input);
 
 		// set Icon
 		Sysp("Set custom Icon with URL? (Y/N): ");
@@ -250,6 +237,69 @@ public class ServerRun {
 				return -1;
 			}
 		}
+		return port;
+	}
+	
+	/**
+	 * setPort
+	 * makes sure ports are valid and does cause huge probs
+	 * @param input
+	 * @return
+	 */
+	public static int setPort(Scanner input) {
+		String answer;
+		String s;
+		int port = -1;
+		
+		do {
+			Sysp("Port to open: ");
+			s = input.nextLine();
+			port = inCheckINT(s);
+		}while (port == -1);
+		
+		while (checkPortInUse(port)) {
+			Sysp("Port in use. AutoPort? Y/N : ");
+			answer = input.nextLine().toLowerCase();
+			if (answer.equals("y") || answer.equals("yes")) {
+				port = autoPort(port);
+
+				if (port == -1) {
+					// on = false;
+					Sysp("Failed to find port...");
+					break;
+				}
+				Sysp("Now using port: " + port);
+			} 
+			else {
+				do {
+					Sysp("New Port to open: ");
+					s = input.nextLine();
+					port = inCheckINT(s);
+				}while (port == -1);
+			}
+		}
+		return port;
+	}
+	
+	/**
+	 * inCheckINT
+	 * checks that given string contains only chars that are numbers.
+	 * @param s
+	 * @return
+	 */
+	private static int inCheckINT(String s) {
+		int port = -1;
+		
+		boolean t = true;
+		for (int i = 0; i < s.length(); i++) {
+			if (48 > s.charAt(i) || s.charAt(i) > 57) {
+				Sysp("Invaild port");
+				t = false;
+				break;
+			}
+		}
+		if (t == true)
+			port = Integer.parseInt(s);
 		return port;
 	}
 

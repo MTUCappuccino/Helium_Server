@@ -13,66 +13,66 @@ public class Server implements Runnable {
 
 	// Tracks if server open
 	private boolean open = true;
-	
-	//Tracks if handles required
+
+	// Tracks if handles required
 	private boolean handles;
-	
-	//Tracks if password required
+
+	// Tracks if password required
 	private boolean passes;
-	
-	//Tracks server type
+
+	// Tracks server type
 	private String serverType;
 
-	//Tracks port number
+	// Tracks port number
 	private int port;
-	
-	//Tracks server socket
+
+	// Tracks server socket
 	private ServerSocket listener;
-	
-	//The server name
+
+	// The server name
 	private String serverName = "";
-	
-	//The password
+
+	// The password
 	private String password = "";
-	
-	//Default server color is black
+
+	// Default server color is black
 	private String hexColor = "000000";
-	
-	//The Icon URL
+
+	// The Icon URL
 	private String IconURL = "NULL";
 
-	//Not yet implemented
+	// Not yet implemented
 	public boolean public_;
-	
-	//Tracking this thread
+
+	// Tracking this thread
 	Thread t;
-	
-	//Opening messaging thread
+
+	// Opening messaging thread
 	ServerMessaging messaging = new ServerMessaging();
 
 	/**
 	 * Server
 	 *
-	 * Constructor; sets the port number, and name, password, and whether server will require 
-	 * 		handles and passwords
+	 * Constructor; sets the port number, and name, password, and whether server
+	 * will require handles and passwords
 	 *
 	 * @param portNum
-	 * 		number to set port to
+	 *            number to set port to
 	 * @param name
-	 * 		name of server
+	 *            name of server
 	 * @param pass
-	 * 		password to set
+	 *            password to set
 	 * @param passesI
-	 * 		If server requires password
+	 *            If server requires password
 	 * @param handlesI
-	 * 		If server requires handles
+	 *            If server requires handles
 	 */
 	Server(int portNum, String name, String pass, boolean passesI, boolean handlesI) {
 		setPort(portNum);
 		setName(name);
 		setPassword(pass);
 		handles = handlesI;
-		passes = passesI;	
+		passes = passesI;
 	}
 
 	/**
@@ -88,8 +88,8 @@ public class Server implements Runnable {
 	}
 
 	/**
-	 * closeServer()
-	 *		Closes the server, and the messaging thread
+	 * closeServer() Closes the server, and the messaging thread
+	 * 
 	 * @return boolean, successful close = true
 	 */
 	public boolean closeServer() {
@@ -105,17 +105,17 @@ public class Server implements Runnable {
 
 	@Override
 	public void run() {
-		
+
 		// create the listener while/try
-		
+
 		// listen on the port while
-		
+
 		// clean up stuff
-		
+
 		serverType = createServerType();
-		
+
 		try {
-			//Open server port
+			// Open server port
 			listener = new ServerSocket(port);
 			open = true;
 			try {
@@ -123,30 +123,30 @@ public class Server implements Runnable {
 					Socket socket = listener.accept();
 
 					System.out.println();
-					
+
 					try {
-						//make a new person to track user
+						// make a new person to track user
 						Person person = new Person(socket);
-						
-						//Server to client for data request
+
+						// Server to client for data request
 						initalOut(person);
-						
-						//client to server with required info
+
+						// client to server with required info
 						initalIn(person);
 
-						//Check to see if they sent the right info
+						// Check to see if they sent the right info
 						if (person.getStatus()) {
 							welcome(person);
 
 						} else {
-							
+
 							outSeverMessage(person, "invalid_password");
 							initalIn(person);
-							
+
 							if (person.getStatus()) {
 								welcome(person);
 							}
-							
+
 						}
 					} finally {
 
@@ -195,15 +195,17 @@ public class Server implements Runnable {
 
 		p.setHandle(answer.substring(junkread, junkread + nameLength));
 
-		String pass = answer.substring(junkread + nameLength+ 1, junkread + nameLength + passLength+ 1);
-//		System.out.println(pass);
+		String pass = answer.substring(junkread + nameLength + 1, junkread + nameLength + passLength + 1);
+		// System.out.println(pass);
 
 		if (serverType.equals("01") || serverType.equals("11")) {
-		p.setStatus(checkPassword(pass));
-		if (p.getStatus() == false) {
-			System.out.println("Failed password attempt");
+			p.setStatus(checkPassword(pass));
+			if (p.getStatus() == false) {
+				System.out.println("Failed password attempt");
+			}
+		} else {
+			p.setStatus(true);
 		}
-		} else {p.setStatus(true);}
 	}
 
 	/**
@@ -216,40 +218,42 @@ public class Server implements Runnable {
 		person.getOutput().write(serverName + ";" + hexColor + ";" + IconURL + "\n");
 		person.getOutput().flush();
 	}
-	
+
 	/**
-	 * welcome
-	 * Sends out data, adds person to online, welcome message, server mess, ghost check.
+	 * welcome Sends out data, adds person to online, welcome message, server
+	 * mess, ghost check.
+	 * 
 	 * @param person
 	 * @throws IOException
 	 */
 	private void welcome(Person person) throws IOException {
-		//If true, send them server data
+		// If true, send them server data
 		outSetup(person);
-		
-		//Add them to the currently online users
+
+		// Add them to the currently online users
 		messaging.online.add(person);
-		
-		//Make welcome message
-		Message welcome = new Message(Message.MessageType.NEW_MESSAGE,
-				Message.ContentType.TEXT, "Server", 
+
+		// Make welcome message
+		Message welcome = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT, "Server",
 				(handles ? person.getHandle() + "joined\n" : "User joined\n"));
-	
-		//Send welcome message
+
+		// Send welcome message
 		messaging.messageDecsSERVER(welcome);
-		
-		//Tell server admin someone joined
+
+		// Tell server admin someone joined
 		System.out.print((handles ? person.getHandle() + "joined\n" : "User joined\n"));
-		
-		//Check if the handle was that of a ghost
-		ghostCheck(person);
+
+		// Check if the handle was that of a ghost
+		messaging.ghostCheck(person);
 	}
 
 	/**
 	 * outServerMessage sends direct unformatted messages from server to a user.
 	 * Mainly for testing
+	 * 
 	 * @param person
-	 * @param mess String message
+	 * @param mess
+	 *            String message
 	 * @throws IOException
 	 */
 	private void outSeverMessage(Person person, String mess) throws IOException {
@@ -258,8 +262,8 @@ public class Server implements Runnable {
 	}
 
 	/**
-	 * THIS IS A UNTRACKED PUSH
-	 * only use for client setting pushes
+	 * THIS IS A UNTRACKED PUSH only use for client setting pushes
+	 * 
 	 * @param mess
 	 */
 	private void outServerAll(Message mess) {
@@ -270,23 +274,23 @@ public class Server implements Runnable {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
-	 * createServerType
-	 * creates server type based on handles and passes
+	 * createServerType creates server type based on handles and passes
+	 * 
 	 * @return String 00, 10, 01, 11
 	 */
 	private String createServerType() {
 		return (handles ? "1" : "0") + (passes ? "1" : "0");
 	}
-	
+
 	public void update() {
-		Message update = new Message(Message.MessageType.UPDATE_SERVER_DATA,
-				Message.ContentType.TEXT, "Server", "serverName" + ";" + hexColor + ";" + IconURL + "\n" );
+		Message update = new Message(Message.MessageType.UPDATE_SERVER_DATA, Message.ContentType.TEXT, "Server",
+				"serverName" + ";" + hexColor + ";" + IconURL + "\n");
 		outServerAll(update);
 	}
 
-	// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ALL BELOW ARE SET, GET, CHECK// METHODS/////////////////////////////////
+	// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ALL BELOW ARE SET, GET, CHECK//METHODS/////////////////////////////////
 	/**
 	 * setPort
 	 *
@@ -353,55 +357,27 @@ public class Server implements Runnable {
 	public void setHexColor(String x) {
 		hexColor = x;
 	}
-	
+
 	/**
-	 * setIconURL
-	 * sets ICON URL
+	 * setIconURL sets ICON URL
+	 * 
 	 * @param x
 	 */
 	public void setIconURL(String x) {
 		IconURL = x;
 	}
-	
+
 	/**
-	 * getMessagesSent
-	 * stat method, returns user to user number of messages
+	 * getMessagesSent stat method, returns user to user number of messages
+	 * 
 	 * @return int number of messages
 	 */
 	public int getMessagesSent() {
 		return messaging.messagesSent;
 	}
-	
+
 	public int getMessEdited() {
 		return messaging.messEdited;
 	}
-	
-	/**
-	 * ghostCheck
-	 * sees if someone was this handle, and gives them missed messages
-	 * @param person
-	 */
-	private void ghostCheck(Person person) {
-		
-		for (int i = 0, g = messaging.offline.size(); i < g; i++ ) {
-			if(messaging.offline.get(i).getHandle().equals(person.getHandle())) {
-				
-				String match = messaging.messQueue.messDump(messaging.offline.get(i).getLastKnown());
-				messaging.offline.remove(i);
-				
-				String[] split = match.split(",");
-				int min = Integer.parseInt(split[0]);
-				int max = Integer.parseInt(split[1]);
-				
-				for (;min < max; min++) {
-					try {
-						messaging.tinyPush(messaging.messQueue.get(min), person);
-					} catch (IOException e) {
-						System.out.println("Ghost Update fail");
-					}
-				}
-				return;
-			}
-		}
-	}
+
 }

@@ -4,7 +4,7 @@ public class Message {
     
     public enum MessageType {
         NEW_MESSAGE(0), EDIT_MESSAGE(1), DELETE_MESSAGE(2), CLOSE_CONNECTION(3),
-        LEAVE_SERVER(4), UPDATE_SERVER_DATA(5);
+        LEAVE_SERVER(4), UPDATE_SERVER_DATA(5), HEARTBEAT(6);
         
         private final int value;
         private MessageType(int value) {

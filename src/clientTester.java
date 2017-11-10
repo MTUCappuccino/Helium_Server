@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -7,33 +8,43 @@ import java.util.Scanner;
 
 public class clientTester {
 
-	public String t1;
+	public static String t1;
 	
-	public clientTester(int port) {
-		t1 =testLocalConnect(port);
-	}
+	static Message m = new Message(Message.MessageType.NEW_MESSAGE,
+			Message.ContentType.TEXT, "Client1", 
+			("READ ME\n"));
 	
-//	public static void main(String[] args) {
-//		t1 = testLocalConnect(9090);
-//		System.out.println(t1);
+//	public clientTester(int port) {
+//		t1 =testLocalConnect(port);
 //	}
+	
+	public static void main(String[] args) {
+		t1 = testLocalConnect(1024);
+		System.out.println(t1);
+	}
 
 	
 	public static String testLocalConnect(int port) {
 
 		try {
 			Socket s = new Socket("localhost", port);
-			BufferedReader input1 = new BufferedReader(new InputStreamReader(s.getInputStream()));
+			Person client = new Person(s);
 
-			incoming(s, input1);
+			incoming(s, client.getInput());
 			/* incoming paste */
 
-			outgoing(s, "0,0,,\n"); //4,4,2upa,Mega\n
+			outgoing(client.getOutput(), "0,0,,"); //4,4,2upa,Mega\n
 			/* outgoing paste */
 
-//			outgoing(s, messOUT("1;3;1;tester1;test").toString());
+			
+//			outgoing(client.getOutput(), m.toString());
+			int count = 0;
+			while(count < 100) {
+				System.out.println(incoming(s, client.getInput()));
+				count++;
+			}
 
-			return incoming(s, input1);
+			return incoming(s, client.getInput());
 			// s.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -42,24 +53,21 @@ public class clientTester {
 	}
 
 	private static String incoming(Socket s, BufferedReader input1) throws IOException {
-		
-
-		boolean t = true;
-
-		while (t) {
-			if (input1.ready()) {
+//		boolean t = true;
+//
+//		while (t) {
+//			if (input1.ready()) {
 				String answer = input1.readLine();
 				return answer;
-			} else {
-			}
-		}
-		return null;
+//			} else {
+//			}
+//		}
+//		return null;
 
 	}
 
-	private static void outgoing(Socket s, String sting) throws IOException {
-		PrintWriter out = new PrintWriter(s.getOutputStream(), true);
-		out.println(sting);
+	private static void outgoing(BufferedWriter out, String sting) throws IOException {
+		out.write(sting + "\n");
 		out.flush();
 	}
 	
