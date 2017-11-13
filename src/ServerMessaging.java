@@ -18,6 +18,8 @@ public class ServerMessaging implements Runnable {
 	// Tracks stats.
 	public int messagesSent = 0;
 	public int messEdited = 0;
+	public int born = 0;
+	public int died = 0;
 
 	// Tracks if this thread is running/ control variable
 	private boolean open = true;
@@ -76,34 +78,29 @@ public class ServerMessaging implements Runnable {
 							push(left);
 							break;
 						case LEAVE_SERVER:
+							Message leave = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT,
+									"Server", ("User" + online.get(i).getHandle() + "dissconnected\n"));
 
+							leave.setId(messQueue.count);
+							messQueue.add(leave);
+
+							online.remove(i);
+							died += 1;
+
+							push(leave);
 							break;
 						case UPDATE_SERVER_DATA:
+							break;
+						default:
 							break;
 
 						}
 
 					} else {
 						// check that person still good
-						try {
-
-							Message beat = new Message(Message.MessageType.HEARTBEAT, Message.ContentType.TEXT,
-									"Server", null);
-
-							tinyPush(beat, online.get(i));
-
-						} catch (IOException e) {
-							Message disconnect = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT,
-									"Server", ("User" + online.get(i).getHandle() + "dissconnected\n"));
-
-							Ghost ghost = new Ghost(online.get(i), messQueue.count);
-
-							disconnect.setId(messQueue.count);
-							messQueue.add(disconnect);
-
-							offline.add(ghost);
+						if (!heartbeat(online.get(i))) {
 							online.remove(i);
-							push(disconnect);
+							died += 1;
 						}
 
 					}
@@ -143,8 +140,14 @@ public class ServerMessaging implements Runnable {
 	 */
 	protected void push(Message message) throws IOException {
 		for (int i = 0; i < online.size(); i++) {
+			// if (heartbeat(online.get(i))) {
 			online.get(i).getOutput().write(message.toString());
 			online.get(i).getOutput().flush();
+			// } else {
+			// online.remove(i);
+			// died += 1;
+			// i--;
+			// }
 		}
 	}
 
@@ -156,6 +159,7 @@ public class ServerMessaging implements Runnable {
 	 * @throws IOException
 	 */
 	protected void tinyPush(Message message, Person person) throws IOException {
+
 		person.getOutput().write(message.toString());
 		person.getOutput().flush();
 	}
@@ -213,7 +217,8 @@ public class ServerMessaging implements Runnable {
 			break;
 		case UPDATE_SERVER_DATA:
 			break;
-
+		default:
+			break;
 		}
 	}
 
@@ -237,7 +242,8 @@ public class ServerMessaging implements Runnable {
 
 				for (; min < max; min++) {
 					try {
-						tinyPush(messQueue.get(min), person);
+						if (online.size() > 0)
+							tinyPush(messQueue.get(min), person);
 					} catch (IOException e) {
 						System.out.println("Ghost Update fail");
 					}
@@ -245,6 +251,21 @@ public class ServerMessaging implements Runnable {
 				return;
 			}
 
+		}
+	}
+
+	private boolean heartbeat(Person p) throws IOException {
+
+		try {
+
+			Message beat = new Message(Message.MessageType.HEARTBEAT, Message.ContentType.TEXT, "Server", null);
+
+			tinyPush(beat, p);
+			return true;
+
+		} catch (IOException e) {
+
+			return false;
 		}
 	}
 }

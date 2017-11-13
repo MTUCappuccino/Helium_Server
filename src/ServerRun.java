@@ -86,6 +86,12 @@ public class ServerRun {
 		case "stats":
 			stats();
 			break;
+		case "register" :
+			if (runningServer) {
+				Sysp("What is your ip address?: ");
+				Sysp(server.reg(scanner.nextLine()));
+			}
+			break;
 		default:
 			Sysp("Invaild command");
 			break;
@@ -102,6 +108,7 @@ public class ServerRun {
 	private static void makeServer(Scanner input) {
 		boolean handles;
 		boolean passes;
+		boolean poblic;
 		String pass = "";
 
 		// Gets port number
@@ -111,10 +118,21 @@ public class ServerRun {
 		// Gets Server name
 		Sysp("Server Name: ");
 		String name = input.nextLine();
+		
+		// Checking if public
+		Sysp("Is the server public?(Y/N): ");
+		String answer = input.nextLine().toLowerCase();
+		
+		// Checking public answer
+				if (answer.equals("y") || answer.equals("yes")) {
+					poblic = true;
+				} else {
+					poblic = false;
+				}
 
 		// Asks about passwords
 		Sysp("Password required entry?(Y/N): ");
-		String answer = input.nextLine().toLowerCase();
+		answer = input.nextLine().toLowerCase();
 
 		// Checking password answer
 		if (answer.equals("y") || answer.equals("yes")) {
@@ -141,7 +159,7 @@ public class ServerRun {
 	
 
 	// Creates new server with given inputs
-	server = new Server(port,name,pass,passes,handles);
+	server = new Server(port,name,pass,passes,handles,poblic);
 
 	// sets color of server
 	setColor(input);
@@ -373,7 +391,11 @@ public class ServerRun {
 			Sysp("No server running to get info about...");
 			return;
 		}
-		Sysp("Number of users that are online: " + server.messaging.online.size());
+		Sysp("Number of users born: " + server.messaging.born);
+		Sysp("Number of users that are alive: " + server.messaging.online.size());
+		Sysp("Number of Ghosts: " + server.messaging.offline.size());
+		Sysp("Number of users who have died: " + server.messaging.died);
+		Sysp("");
 		Sysp("Number of messages sent: " + server.getMessagesSent());
 		Sysp("Number of messages edited: " + server.getMessEdited());
 	}

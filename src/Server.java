@@ -67,12 +67,13 @@ public class Server implements Runnable {
 	 * @param handlesI
 	 *            If server requires handles
 	 */
-	Server(int portNum, String name, String pass, boolean passesI, boolean handlesI) {
+	Server(int portNum, String name, String pass, boolean passesI, boolean handlesI, boolean poblic) {
 		setPort(portNum);
 		setName(name);
 		setPassword(pass);
 		handles = handlesI;
 		passes = passesI;
+		public_ = poblic;
 	}
 
 	/**
@@ -105,12 +106,6 @@ public class Server implements Runnable {
 
 	@Override
 	public void run() {
-
-		// create the listener while/try
-
-		// listen on the port while
-
-		// clean up stuff
 
 		serverType = createServerType();
 
@@ -242,7 +237,8 @@ public class Server implements Runnable {
 
 		// Tell server admin someone joined
 		System.out.print((handles ? person.getHandle() + "joined\n" : "User joined\n"));
-
+		messaging.born += 1;
+		
 		// Check if the handle was that of a ghost
 		messaging.ghostCheck(person);
 	}
@@ -284,10 +280,23 @@ public class Server implements Runnable {
 		return (handles ? "1" : "0") + (passes ? "1" : "0");
 	}
 
+	/**
+	 * update
+	 * Sends update to all clients of new server data
+	 */
 	public void update() {
 		Message update = new Message(Message.MessageType.UPDATE_SERVER_DATA, Message.ContentType.TEXT, "Server",
 				"serverName" + ";" + hexColor + ";" + IconURL + "\n");
 		outServerAll(update);
+	}
+	
+	public String reg(String ip) {
+		int prt = listener.getLocalPort();
+		String plt = String.valueOf(prt);
+		String mess = ("" + serverName.length() + "," + IconURL.length() + "," + ip.length() + "," + plt.length()
+		+ "," + (handles ? "1" : "0") + "," + (passes ? "1" : "0") + "," + (public_ ? "1" : "0") + "," + serverName 
+		+ "," + IconURL + "," + ip + "," + prt);
+		return mess;
 	}
 
 	// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ALL BELOW ARE SET, GET, CHECK//METHODS/////////////////////////////////
