@@ -1,7 +1,12 @@
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
 /**
  * Server the Sever for Helium
@@ -15,7 +20,7 @@ public class Server implements Runnable {
 	private boolean open = true;
 
 	// Tracks if handles required
-	private boolean handles;
+	protected boolean handles;
 
 	// Tracks if password required
 	private boolean passes;
@@ -41,11 +46,15 @@ public class Server implements Runnable {
 	// The Icon URL
 	private String IconURL = "NULL";
 
-	// Not yet implemented
+	// Tracks if server is public or not
 	public boolean public_;
 
+	// TEMP Central info 
+	String hostName = "localhost";
+	int hostPort = 1024;
+	
 	// Tracking this thread
-	Thread t;
+	protected Thread t;
 
 	// Opening messaging thread
 	ServerMessaging messaging = new ServerMessaging();
@@ -181,6 +190,7 @@ public class Server implements Runnable {
 	 */
 	private void initalIn(Person p) throws IOException {
 
+		
 		String answer = p.getInput().readLine();
 		String[] split = answer.split(",");
 
@@ -238,7 +248,7 @@ public class Server implements Runnable {
 		// Tell server admin someone joined
 		System.out.print((handles ? person.getHandle() + "joined\n" : "User joined\n"));
 		messaging.born += 1;
-		
+
 		// Check if the handle was that of a ghost
 		messaging.ghostCheck(person);
 	}
@@ -263,12 +273,12 @@ public class Server implements Runnable {
 	 * @param mess
 	 */
 	private void outServerAll(Message mess) {
-		try {
+//		try {
 			messaging.push(mess);
-		} catch (IOException e) {
-			System.out.println("Failed Server push\n");
-			e.printStackTrace();
-		}
+//		} catch (IOException e) {
+//			System.out.println("Failed Server push\n");
+//			e.printStackTrace();
+//		}
 	}
 
 	/**
@@ -281,25 +291,46 @@ public class Server implements Runnable {
 	}
 
 	/**
-	 * update
-	 * Sends update to all clients of new server data
+	 * update Sends update to all clients of new server data
 	 */
 	public void update() {
 		Message update = new Message(Message.MessageType.UPDATE_SERVER_DATA, Message.ContentType.TEXT, "Server",
 				"serverName" + ";" + hexColor + ";" + IconURL + "\n");
 		outServerAll(update);
 	}
-	
+
 	public String reg(String ip) {
+		String reply;
+
+		// Getting local port server set on
 		int prt = listener.getLocalPort();
 		String plt = String.valueOf(prt);
-		String mess = ("" + serverName.length() + "," + IconURL.length() + "," + ip.length() + "," + plt.length()
-		+ "," + (handles ? "1" : "0") + "," + (passes ? "1" : "0") + "," + (public_ ? "1" : "0") + "," + serverName 
-		+ "," + IconURL + "," + ip + "," + prt);
-		return mess;
+
+		// Creating message for central
+		String mess = ("" + serverName.length() + "," + IconURL.length() + "," + ip.length() + "," + plt.length() + ","
+				+ (handles ? "1" : "0") + "," + (passes ? "1" : "0") + "," + (public_ ? "1" : "0") + "," + serverName
+				+ "," + IconURL + "," + ip + "," + prt);
+		// return mess;
+
+		try {
+			Socket s = new Socket(hostName, hostPort);
+
+			BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
+			BufferedWriter output = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+
+			output.write(mess + "\n");
+			output.flush();
+			
+			reply = input.readLine();
+			s.close();
+		} catch (IOException e) {
+			return mess;
+		}
+
+		return reply;
 	}
 
-	// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ALL BELOW ARE SET, GET, CHECK//METHODS/////////////////////////////////
+	// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ALL BELOW ARE SET, GET, CHECK, METHODS/////////////////////////////////
 	/**
 	 * setPort
 	 *
