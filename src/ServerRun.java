@@ -1,6 +1,7 @@
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -71,6 +72,7 @@ public class ServerRun {
 				server.closeServer();
 				runningServer = false;
 			}
+			Sysp("Goodbye");
 			on = false;
 			break;
 		case "close":
@@ -92,11 +94,20 @@ public class ServerRun {
 				Sysp(server.reg(scanner.nextLine()));
 			}
 			break;
+		case "names" :
+			names();
+			break;
+		case "kick" :
+			kick(scanner);
+			break;
 		default:
 			Sysp("Invaild command");
 			break;
 		}
 	}
+
+
+
 
 	/**
 	 * makeServer asks for inputs to make a required server, then launches join
@@ -318,6 +329,10 @@ public class ServerRun {
 		}
 		if (t == true)
 			port = Integer.parseInt(s);
+		if (port > 9050) {
+			Sysp("Port to large");
+			port = -1;
+		}
 		return port;
 	}
 
@@ -398,6 +413,39 @@ public class ServerRun {
 		Sysp("");
 		Sysp("Number of messages sent: " + server.getMessagesSent());
 		Sysp("Number of messages edited: " + server.getMessEdited());
+	}
+	
+	/**
+	 * names
+	 * list all current names of those online
+	 */
+	private static void names() {
+		if (runningServer && server.handles) {
+			ArrayList<Person> copy = server.messaging.online;
+			for (int i = 0; i < copy.size(); i++ ) {
+				Sysp(copy.get(i).getHandle());
+			}
+		}
+		else if(runningServer) {
+			Sysp("Handles are not allowed");
+		}
+		else{
+			Sysp("No server running...");
+		}
+	}
+	
+	/**
+	 * kick
+	 * request a name to try to kick from server
+	 * @param scanner
+	 */
+	private static void kick(Scanner scanner) {
+		Sysp("Who?: ");
+		try {
+			server.messaging.kick(scanner.nextLine());
+		} catch (IOException e) {
+			Sysp("Failed to kick");
+		}
 	}
 
 }

@@ -62,6 +62,7 @@ public class ServerMessaging implements Runnable {
 							messQueue.set(m.getId(), m);
 							break;
 						case DELETE_MESSAGE:
+							// Need implement
 							break;
 						case CLOSE_CONNECTION:
 							Message left = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT,
@@ -98,10 +99,10 @@ public class ServerMessaging implements Runnable {
 
 					} else {
 						// check that person still good
-						if (!heartbeat(online.get(i))) {
+/*						if (!heartbeat(online.get(i))) {
 							online.remove(i);
 							died += 1;
-						}
+						}*/
 
 					}
 
@@ -123,11 +124,11 @@ public class ServerMessaging implements Runnable {
 		Message disconnect = new Message(Message.MessageType.CLOSE_CONNECTION, Message.ContentType.TEXT, "Server",
 				("I was shut down...\n"));
 
-		try {
+//		try {
 			push(disconnect);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 
 		open = false;
 	}
@@ -138,17 +139,25 @@ public class ServerMessaging implements Runnable {
 	 * @param message
 	 * @throws IOException
 	 */
-	protected void push(Message message) throws IOException {
+	protected void push(Message message) {
+		
+		ArrayList<Person> failures = new ArrayList<Person>();
+		
 		for (int i = 0; i < online.size(); i++) {
-			// if (heartbeat(online.get(i))) {
-			online.get(i).getOutput().write(message.toString());
-			online.get(i).getOutput().flush();
-			// } else {
-			// online.remove(i);
-			// died += 1;
-			// i--;
-			// }
+			try {
+				online.get(i).getOutput().write(message.toString());
+				online.get(i).getOutput().flush();
+			} catch (IOException e) {
+				failures.add(online.get(i));
+			}
 		}
+		
+		for(int i = 0; i < failures.size(); i ++) {
+			online.remove(failures.get(i));
+			System.out.println("HIT");
+			died += 1;
+		}
+		
 	}
 
 	/**
@@ -254,6 +263,14 @@ public class ServerMessaging implements Runnable {
 		}
 	}
 
+	/**
+	 * heartbeat constantly checks everyone is online
+	 * 
+	 * @param p
+	 *            Perosn
+	 * @return true if alive
+	 * @throws IOException
+	 */
 	private boolean heartbeat(Person p) throws IOException {
 
 		try {
@@ -267,5 +284,44 @@ public class ServerMessaging implements Runnable {
 
 			return false;
 		}
+	}
+
+	/**
+	 * kick
+	 * kicks all people with specified handle
+	 * @param handle String
+	 * @return true if people are kicked
+	 * @throws IOException Fails to send messages
+	 */
+	protected boolean kick(String handle) throws IOException {
+		// ArrayList tracking all who will be kicked
+		ArrayList<Person> match = new ArrayList<Person>();
+		// Says if people where kicked
+		boolean booted = false;
+		// Tracking variable
+		int siz = online.size();
+		
+		// First Loop: looks for people with matching handles
+		for (int i = 0; i < siz; i++) {
+			if (online.get(i).getHandle().equals(handle)) {
+				match.add(online.get(i));
+				booted = true;
+			}
+		}
+		
+		// Second Loop: kicks all matches
+		for(int i = match.size(); i < 0; i--) {
+			
+		Message kick = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT, "Server",
+				(handle + "was kicked\n"));
+		messageDecsSERVER(kick);
+		
+		kick = new Message(Message.MessageType.CLOSE_CONNECTION, Message.ContentType.TEXT, "Server",
+				(handle + "was kicked\n"));
+		tinyPush(kick, match.get(i));
+		}
+		
+		// returns if any was booted or not
+		return booted;
 	}
 }
