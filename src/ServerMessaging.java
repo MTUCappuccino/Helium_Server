@@ -20,9 +20,14 @@ public class ServerMessaging implements Runnable {
 	public int messEdited = 0;
 	public int born = 0;
 	public int died = 0;
+	public int kicked = 0;
 
 	// Tracks if this thread is running/ control variable
 	private boolean open = true;
+	
+	// Controlls for kicking
+	protected boolean kicking = false;
+	private String target;
 
 	// Tracking this thread
 	protected Thread t;
@@ -36,7 +41,19 @@ public class ServerMessaging implements Runnable {
 	@Override
 	public void run() {
 		while (open) {
-			for (int i = 0; i < online.size(); i++) {
+			
+			if(kicking) {
+				try {
+					kick(target);
+					kicking = false;
+					System.out.println("HIT " + target);
+				} catch (IOException e) {
+					System.out.println("Failed kick");
+					kicking = false;
+				}
+			}
+			
+			for (int i = 0; i < online.size(); i++) {			
 				try {
 					if (online.get(i).getInput().ready()) {
 
@@ -99,10 +116,10 @@ public class ServerMessaging implements Runnable {
 
 					} else {
 						// check that person still good
-/*						if (!heartbeat(online.get(i))) {
-							online.remove(i);
-							died += 1;
-						}*/
+						/*
+						 * if (!heartbeat(online.get(i))) { online.remove(i);
+						 * died += 1; }
+						 */
 
 					}
 
@@ -124,11 +141,11 @@ public class ServerMessaging implements Runnable {
 		Message disconnect = new Message(Message.MessageType.CLOSE_CONNECTION, Message.ContentType.TEXT, "Server",
 				("I was shut down...\n"));
 
-//		try {
-			push(disconnect);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
+		// try {
+		push(disconnect);
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
 
 		open = false;
 	}
@@ -140,9 +157,9 @@ public class ServerMessaging implements Runnable {
 	 * @throws IOException
 	 */
 	protected void push(Message message) {
-		
+
 		ArrayList<Person> failures = new ArrayList<Person>();
-		
+
 		for (int i = 0; i < online.size(); i++) {
 			try {
 				online.get(i).getOutput().write(message.toString());
@@ -151,13 +168,13 @@ public class ServerMessaging implements Runnable {
 				failures.add(online.get(i));
 			}
 		}
-		
-		for(int i = 0; i < failures.size(); i ++) {
+
+		for (int i = 0; i < failures.size(); i++) {
 			online.remove(failures.get(i));
 			System.out.println("HIT");
 			died += 1;
 		}
-		
+
 	}
 
 	/**
@@ -167,10 +184,15 @@ public class ServerMessaging implements Runnable {
 	 * @param person
 	 * @throws IOException
 	 */
-	protected void tinyPush(Message message, Person person) throws IOException {
+	protected void tinyPush(Message message, Person person) {
 
-		person.getOutput().write(message.toString());
-		person.getOutput().flush();
+		try {
+			person.getOutput().write(message.toString());
+			person.getOutput().flush();
+		} catch (IOException e) {
+			online.remove(person);
+		}
+
 	}
 
 	/**
@@ -250,12 +272,9 @@ public class ServerMessaging implements Runnable {
 				int max = Integer.parseInt(split[1]);
 
 				for (; min < max; min++) {
-					try {
-						if (online.size() > 0)
-							tinyPush(messQueue.get(min), person);
-					} catch (IOException e) {
-						System.out.println("Ghost Update fail");
-					}
+
+					if (online.size() > 0)
+						tinyPush(messQueue.get(min), person);
 				}
 				return;
 			}
@@ -273,25 +292,20 @@ public class ServerMessaging implements Runnable {
 	 */
 	private boolean heartbeat(Person p) throws IOException {
 
-		try {
-
 			Message beat = new Message(Message.MessageType.HEARTBEAT, Message.ContentType.TEXT, "Server", null);
 
 			tinyPush(beat, p);
 			return true;
-
-		} catch (IOException e) {
-
-			return false;
-		}
 	}
 
 	/**
-	 * kick
-	 * kicks all people with specified handle
-	 * @param handle String
+	 * kick kicks all people with specified handle
+	 * 
+	 * @param handle
+	 *            String
 	 * @return true if people are kicked
-	 * @throws IOException Fails to send messages
+	 * @throws IOException
+	 *             Fails to send messages
 	 */
 	protected boolean kick(String handle) throws IOException {
 		// ArrayList tracking all who will be kicked
@@ -300,7 +314,7 @@ public class ServerMessaging implements Runnable {
 		boolean booted = false;
 		// Tracking variable
 		int siz = online.size();
-		
+
 		// First Loop: looks for people with matching handles
 		for (int i = 0; i < siz; i++) {
 			if (online.get(i).getHandle().equals(handle)) {
@@ -308,20 +322,27 @@ public class ServerMessaging implements Runnable {
 				booted = true;
 			}
 		}
-		
+
 		// Second Loop: kicks all matches
-		for(int i = match.size(); i < 0; i--) {
+		for (int i = match.size()-1; i >= 0; i--) {
+
+			Message kick = new Message(Message.MessageType.CLOSE_CONNECTION, Message.ContentType.TEXT, "Server",
+					("You were kicked\n"));
+			tinyPush(kick, match.get(i));
+			online.remove(match.get(i));
 			
-		Message kick = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT, "Server",
-				(handle + "was kicked\n"));
-		messageDecsSERVER(kick);
-		
-		kick = new Message(Message.MessageType.CLOSE_CONNECTION, Message.ContentType.TEXT, "Server",
-				(handle + "was kicked\n"));
-		tinyPush(kick, match.get(i));
+			 kick = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT, "Server",
+					(handle + " was kicked\n"));
+			messageDecsSERVER(kick);
+
+			kicked += 1;
 		}
-		
+
 		// returns if any was booted or not
 		return booted;
+	}
+	
+	public void setTarget(String handle) {
+		target = handle;
 	}
 }

@@ -200,13 +200,13 @@ public class Server implements Runnable {
 
 		p.setHandle(answer.substring(junkread, junkread + nameLength));
 
-		String pass = answer.substring(junkread + nameLength, junkread + nameLength + passLength);
+		String pass = answer.substring(junkread + nameLength + 1, junkread + nameLength + passLength + 1);
 		// System.out.println(pass);
 
 		if (serverType.equals("01") || serverType.equals("11")) {
 			p.setStatus(checkPassword(pass));
 			if (p.getStatus() == false) {
-				System.out.println("Failed password attempt");
+//				System.out.println("Failed password attempt");
 			}
 		} else {
 			p.setStatus(true);
@@ -240,13 +240,13 @@ public class Server implements Runnable {
 
 		// Make welcome message
 		Message welcome = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT, "Server",
-				(handles ? person.getHandle() + "joined\n" : "User joined\n"));
+				(handles ? person.getHandle() +" joined\n" : "User joined\n"));
 
 		// Send welcome message
 		messaging.messageDecsSERVER(welcome);
 
 		// Tell server admin someone joined
-		System.out.print((handles ? person.getHandle() + "joined\n" : "User joined\n"));
+		System.out.print((handles ? person.getHandle() + " joined\n" : "User joined\n"));
 		messaging.born += 1;
 
 		// Check if the handle was that of a ghost
@@ -295,10 +295,15 @@ public class Server implements Runnable {
 	 */
 	public void update() {
 		Message update = new Message(Message.MessageType.UPDATE_SERVER_DATA, Message.ContentType.TEXT, "Server",
-				"serverName" + ";" + hexColor + ";" + IconURL + "\n");
+				serverName + ";" + hexColor + ";" + IconURL + "\n");
 		outServerAll(update);
 	}
 
+	/**
+	 * 
+	 * @param ip
+	 * @return
+	 */
 	public String reg(String ip) {
 		String reply;
 
@@ -418,6 +423,11 @@ public class Server implements Runnable {
 
 	public int getMessEdited() {
 		return messaging.messEdited;
+	}
+	
+	public void kick(String handle) {
+		messaging.setTarget(handle);
+		messaging.kicking = true;
 	}
 
 }

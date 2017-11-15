@@ -54,11 +54,14 @@ public class ServerRun {
 		switch (command) {
 		case "help":
 			Sysp("HELP: prints this message");
-			Sysp("MAKE: will ask for inputs then make a server");
+			Sysp("");
+			Sysp("CLOSE: Closes the current server running");
 			Sysp("EDIT: if a server is running allow you to update settings");
+			Sysp("KICK: will ask for target name and kick all with that name");
+			Sysp("MAKE: will ask for inputs then make a server");
+			Sysp("NAMES: Lists all the names of users currently online");
 			Sysp("SHUTDOWN: closes server and your server software");
 			Sysp("STATS: prints some stats about your server if running");
-			Sysp("CLOSE: Closes the current server running");
 			break;
 		case "make":
 			if (!runningServer) {
@@ -99,6 +102,10 @@ public class ServerRun {
 			break;
 		case "kick" :
 			kick(scanner);
+			break;
+		case "trap" :
+			Trap trap = new Trap();
+			trap.question();
 			break;
 		default:
 			Sysp("Invaild command");
@@ -409,6 +416,7 @@ public class ServerRun {
 		Sysp("Number of users born: " + server.messaging.born);
 		Sysp("Number of users that are alive: " + server.messaging.online.size());
 		Sysp("Number of Ghosts: " + server.messaging.offline.size());
+		Sysp("Number of users kicked: " + server.messaging.kicked);
 		Sysp("Number of users who have died: " + server.messaging.died);
 		Sysp("");
 		Sysp("Number of messages sent: " + server.getMessagesSent());
@@ -441,11 +449,7 @@ public class ServerRun {
 	 */
 	private static void kick(Scanner scanner) {
 		Sysp("Who?: ");
-		try {
-			server.messaging.kick(scanner.nextLine());
-		} catch (IOException e) {
-			Sysp("Failed to kick");
-		}
+			server.kick(scanner.nextLine());
 	}
 
 }
