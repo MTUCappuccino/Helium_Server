@@ -51,7 +51,8 @@ public class Server implements Runnable {
 
 	// TEMP Central info 
 	String hostName = "localhost";
-	int hostPort = 1024;
+	int hostPort = 13245;
+	public String code = "";
 	
 	// Tracking this thread
 	protected Thread t;
@@ -200,8 +201,8 @@ public class Server implements Runnable {
 
 		p.setHandle(answer.substring(junkread, junkread + nameLength));
 
-		String pass = answer.substring(junkread + nameLength + 1, junkread + nameLength + passLength + 1);
-		// System.out.println(pass);
+		String pass = answer.substring(junkread + nameLength , junkread + nameLength + passLength );
+//		 System.out.println(pass);
 
 		if (serverType.equals("01") || serverType.equals("11")) {
 			p.setStatus(checkPassword(pass));
@@ -332,6 +333,7 @@ public class Server implements Runnable {
 			return mess;
 		}
 
+		code = reply;
 		return reply;
 	}
 
@@ -428,6 +430,14 @@ public class Server implements Runnable {
 	public void kick(String handle) {
 		messaging.setTarget(handle);
 		messaging.kicking = true;
+	}
+	
+	public String deleteChange() {
+		return messaging.deleteChange();
+	}
+	
+	public String editChange() {
+		return messaging.editChange();
 	}
 
 }

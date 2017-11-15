@@ -95,7 +95,12 @@ public class ServerRun {
 			if (runningServer) {
 				Sysp("What is your ip address?: ");
 				Sysp(server.reg(scanner.nextLine()));
+			} else {
+				Sysp("No server running to register...");
 			}
+			break;
+		case "short code" :
+			Sysp("Your short code is: " + server.code);
 			break;
 		case "names" :
 			names();
@@ -112,9 +117,6 @@ public class ServerRun {
 			break;
 		}
 	}
-
-
-
 
 	/**
 	 * makeServer asks for inputs to make a required server, then launches join
@@ -197,6 +199,7 @@ public class ServerRun {
 		// opens that server
 		server.openServer();
 		runningServer = true;
+		Sysp("Default messaging is Edit: disable  |  Delete: disabled");
 	}
 
 	/**
@@ -231,7 +234,8 @@ public class ServerRun {
 			return;
 		}
 
-		Sysp("What do you want to edit: Color, Icon, Name");
+		Sysp("What do you want to edit: Color, Icon,,,");
+		Sysp("Or would you like to toggle: Delete, Edit,,,");
 		String answer = input.nextLine().toLowerCase();
 
 		switch (answer) {
@@ -250,6 +254,12 @@ public class ServerRun {
 			String name = input.nextLine();
 			server.setName(name);
 			server.update();
+			break;
+		case "delete":
+			Sysp(server.deleteChange());
+			break;
+		case "edit":
+			Sysp(server.editChange());
 			break;
 		default:
 			Sysp("Invaild command");
