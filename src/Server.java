@@ -135,7 +135,7 @@ public class Server implements Runnable {
 
 						} else {
 
-							outSeverMessage(person, "invalid_password");
+							outSeverMessage(person, "invalid_password\n");
 							initalIn(person);
 
 							if (person.getStatus()) {
@@ -190,7 +190,7 @@ public class Server implements Runnable {
 
 		p.setHandle(answer.substring(junkread, junkread + nameLength));
 
-		String pass = answer.substring(junkread + nameLength + 1, junkread + nameLength + passLength + 1);
+		String pass = answer.substring(junkread + nameLength, junkread + nameLength + passLength);
 		// System.out.println(pass);
 
 		if (serverType.equals("01") || serverType.equals("11")) {
