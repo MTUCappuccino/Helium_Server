@@ -91,7 +91,7 @@ public class ServerRun {
 		case "stats":
 			stats();
 			break;
-		case "register" :
+		case "register":
 			if (runningServer) {
 				Sysp("What is your ip address?: ");
 				Sysp(server.reg(scanner.nextLine()));
@@ -99,19 +99,26 @@ public class ServerRun {
 				Sysp("No server running to register...");
 			}
 			break;
-		case "short code" :
+		case "short code":
 			Sysp("Your short code is: " + server.code);
 			break;
-		case "names" :
+		case "names":
 			names();
 			break;
-		case "kick" :
+		case "kick":
 			kick(scanner);
 			break;
-		case "trap" :
-			Trap trap = new Trap();
-			trap.question();
+		case "trap":
+			if (runningServer) {
+				if (server.messaging.online.size() >3 ) {
+					server.trap();
+				}
+			}
 			break;
+		// case "test" :
+		// String lol = randomPass(2000);
+		// Sysp(lol);
+		// break;
 		default:
 			Sysp("Invaild command");
 			break;
@@ -132,23 +139,23 @@ public class ServerRun {
 		String pass = "";
 
 		// Gets port number
-		
+
 		int port = setPort(input);
 
 		// Gets Server name
 		Sysp("Server Name: ");
 		String name = input.nextLine();
-		
+
 		// Checking if public
 		Sysp("Is the server public?(Y/N): ");
 		String answer = input.nextLine().toLowerCase();
-		
+
 		// Checking public answer
-				if (answer.equals("y") || answer.equals("yes")) {
-					poblic = true;
-				} else {
-					poblic = false;
-				}
+		if (answer.equals("y") || answer.equals("yes")) {
+			poblic = true;
+		} else {
+			poblic = false;
+		}
 
 		// Asks about passwords
 		Sysp("Password required entry?(Y/N): ");
@@ -157,8 +164,18 @@ public class ServerRun {
 		// Checking password answer
 		if (answer.equals("y") || answer.equals("yes")) {
 			passes = true;
-			Sysp("Password: ");
-			pass = input.nextLine();
+
+			// Ask about Random generate
+			Sysp("Randomly generate a Password?(Y/N)");
+			answer = input.nextLine().toLowerCase();
+
+			if (answer.equals("y") || answer.equals("yes")) {
+				pass = randomPass(6);
+				Sysp("Password: " + pass);
+			} else {
+				Sysp("Password: ");
+				pass = input.nextLine();
+			}
 		} else {
 			passes = false;
 		}
@@ -176,13 +193,11 @@ public class ServerRun {
 
 		// Checks given port availability
 
-	
+		// Creates new server with given inputs
+		server = new Server(port, name, pass, passes, handles, poblic);
 
-	// Creates new server with given inputs
-	server = new Server(port,name,pass,passes,handles,poblic);
-
-	// sets color of server
-	setColor(input);
+		// sets color of server
+		setColor(input);
 
 		// set Icon
 		Sysp("Set custom Icon with URL? (Y/N): ");
@@ -234,7 +249,7 @@ public class ServerRun {
 			return;
 		}
 
-		Sysp("What do you want to edit: Color, Icon,,,");
+		Sysp("What do you want to edit: Color, Icon, Name, Password...");
 		Sysp("Or would you like to toggle: Delete, Edit,,,");
 		String answer = input.nextLine().toLowerCase();
 
@@ -254,6 +269,24 @@ public class ServerRun {
 			String name = input.nextLine();
 			server.setName(name);
 			server.update();
+			break;
+		case "password":
+			if (server.getPass()) {
+				Sysp("Randomly generate a Password?(Y/N)");
+				answer = input.nextLine().toLowerCase();
+
+				if (answer.equals("y") || answer.equals("yes")) {
+					String pass = randomPass(6);
+					server.setPassword(pass);
+					Sysp("Password: " + pass);
+				} else {
+					Sysp("Password: ");
+					String pass = input.nextLine();
+					server.setPassword(pass);
+				}
+			} else {
+				Sysp("Passwords are not enabled");
+			}
 			break;
 		case "delete":
 			Sysp(server.deleteChange());
@@ -285,10 +318,10 @@ public class ServerRun {
 		}
 		return port;
 	}
-	
+
 	/**
-	 * setPort
-	 * makes sure ports are valid and does cause huge probs
+	 * setPort makes sure ports are valid and does cause huge probs
+	 * 
 	 * @param input
 	 * @return
 	 */
@@ -296,13 +329,13 @@ public class ServerRun {
 		String answer;
 		String s;
 		int port = -1;
-		
+
 		do {
 			Sysp("Port to open: ");
 			s = input.nextLine();
 			port = inCheckINT(s);
-		}while (port == -1);
-		
+		} while (port == -1);
+
 		while (checkPortInUse(port)) {
 			Sysp("Port in use. AutoPort? Y/N : ");
 			answer = input.nextLine().toLowerCase();
@@ -315,27 +348,26 @@ public class ServerRun {
 					break;
 				}
 				Sysp("Now using port: " + port);
-			} 
-			else {
+			} else {
 				do {
 					Sysp("New Port to open: ");
 					s = input.nextLine();
 					port = inCheckINT(s);
-				}while (port == -1);
+				} while (port == -1);
 			}
 		}
 		return port;
 	}
-	
+
 	/**
-	 * inCheckINT
-	 * checks that given string contains only chars that are numbers.
+	 * inCheckINT checks that given string contains only chars that are numbers.
+	 * 
 	 * @param s
 	 * @return
 	 */
 	private static int inCheckINT(String s) {
 		int port = -1;
-		
+
 		boolean t = true;
 		for (int i = 0; i < s.length(); i++) {
 			if (48 > s.charAt(i) || s.charAt(i) > 57) {
@@ -432,34 +464,56 @@ public class ServerRun {
 		Sysp("Number of messages sent: " + server.getMessagesSent());
 		Sysp("Number of messages edited: " + server.getMessEdited());
 	}
-	
+
 	/**
-	 * names
-	 * list all current names of those online
+	 * names list all current names of those online
 	 */
 	private static void names() {
 		if (runningServer && server.handles) {
 			ArrayList<Person> copy = server.messaging.online;
-			for (int i = 0; i < copy.size(); i++ ) {
+			for (int i = 0; i < copy.size(); i++) {
 				Sysp(copy.get(i).getHandle());
 			}
-		}
-		else if(runningServer) {
+		} else if (runningServer) {
 			Sysp("Handles are not allowed");
-		}
-		else{
+		} else {
 			Sysp("No server running...");
 		}
 	}
-	
+
 	/**
-	 * kick
-	 * request a name to try to kick from server
+	 * kick request a name to try to kick from server
+	 * 
 	 * @param scanner
 	 */
 	private static void kick(Scanner scanner) {
 		Sysp("Who?: ");
-			server.kick(scanner.nextLine());
+		server.kick(scanner.nextLine());
+	}
+
+	/**
+	 * randomPass
+	 * returns a random string of letters and numbers for a password
+	 * @param size
+	 * @return
+	 */
+	private static String randomPass(int size) {
+		char[] array = new char[size];
+		for (int i = 0; i < size; i++) {
+			double s = Math.random() * 2 + 1;
+			// Sysp(s + "");
+			if (s < 2) {
+				int b = (int) (Math.random() * 10) + 48;
+				char c = (char) b;
+				array[i] = c;
+			} else {
+				int b = (int) (Math.random() * 26) + 65;
+				char c = (char) b;
+				array[i] = c;
+			}
+		}
+		String rep = new String(array);
+		return rep;
 	}
 
 }

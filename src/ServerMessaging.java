@@ -15,6 +15,10 @@ public class ServerMessaging implements Runnable {
 	// Tracks up to the last 300 hundred messages
 	protected CircleQue messQueue = new CircleQue(300);
 
+	// Delete
+	private boolean delete = false;
+	private boolean edit = false;
+
 	// Tracks stats.
 	public int messagesSent = 0;
 	public int messEdited = 0;
@@ -24,13 +28,15 @@ public class ServerMessaging implements Runnable {
 
 	// Tracks if this thread is running/ control variable
 	private boolean open = true;
-	
+
 	// Controlls for kicking
 	protected boolean kicking = false;
 	private String target;
 
 	// Tracking this thread
 	protected Thread t;
+	Trap trap;
+	boolean enable = false;
 
 	public ServerMessaging() {
 		t = new Thread(this);
@@ -41,8 +47,9 @@ public class ServerMessaging implements Runnable {
 	@Override
 	public void run() {
 		while (open) {
-			
-			if(kicking) {
+
+			// Checks for kick
+			if (kicking) {
 				try {
 					kick(target);
 					kicking = false;
@@ -52,8 +59,10 @@ public class ServerMessaging implements Runnable {
 					kicking = false;
 				}
 			}
-			
-			for (int i = 0; i < online.size(); i++) {			
+
+			check(enable);
+
+			for (int i = 0; i < online.size(); i++) {
 				try {
 					if (online.get(i).getInput().ready()) {
 
@@ -64,55 +73,7 @@ public class ServerMessaging implements Runnable {
 
 						System.out.println("Got message from " + online.get(i).getHandle());
 
-						switch (m.getType()) {
-
-						case NEW_MESSAGE:
-							m.setId(messQueue.count);
-							messQueue.add(m);
-							messagesSent += 1;
-							push(m);
-							break;
-						case EDIT_MESSAGE:
-							messEdited += 1;
-							push(m);
-							m.setType(Message.MessageType.NEW_MESSAGE);
-							messQueue.set(m.getId(), m);
-							break;
-						case DELETE_MESSAGE:
-							// Need implement
-							break;
-						case CLOSE_CONNECTION:
-							Message left = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT,
-									"Server", ("User" + online.get(i).getHandle() + "left\n"));
-
-							Ghost ghost = new Ghost(online.get(i), messQueue.count);
-
-							left.setId(messQueue.count);
-							messQueue.add(left);
-
-							offline.add(ghost);
-							online.remove(i);
-
-							push(left);
-							break;
-						case LEAVE_SERVER:
-							Message leave = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT,
-									"Server", ("User" + online.get(i).getHandle() + "dissconnected\n"));
-
-							leave.setId(messQueue.count);
-							messQueue.add(leave);
-
-							online.remove(i);
-							died += 1;
-
-							push(leave);
-							break;
-						case UPDATE_SERVER_DATA:
-							break;
-						default:
-							break;
-
-						}
+						intakeDec(m, online.get(i));
 
 					} else {
 						// check that person still good
@@ -127,7 +88,6 @@ public class ServerMessaging implements Runnable {
 					e.printStackTrace();
 				}
 			}
-
 			try {
 				Thread.sleep(20);
 			} catch (InterruptedException ex) {
@@ -185,13 +145,13 @@ public class ServerMessaging implements Runnable {
 	 * @throws IOException
 	 */
 	protected void tinyPush(Message message, Person person) {
-
-		try {
-			person.getOutput().write(message.toString());
-			person.getOutput().flush();
-		} catch (IOException e) {
-			online.remove(person);
-		}
+		if (message != null)
+			try {
+				person.getOutput().write(message.toString());
+				person.getOutput().flush();
+			} catch (IOException e) {
+				online.remove(person);
+			}
 
 	}
 
@@ -292,10 +252,10 @@ public class ServerMessaging implements Runnable {
 	 */
 	private boolean heartbeat(Person p) throws IOException {
 
-			Message beat = new Message(Message.MessageType.HEARTBEAT, Message.ContentType.TEXT, "Server", null);
+		Message beat = new Message(Message.MessageType.HEARTBEAT, Message.ContentType.TEXT, "Server", null);
 
-			tinyPush(beat, p);
-			return true;
+		tinyPush(beat, p);
+		return true;
 	}
 
 	/**
@@ -324,14 +284,14 @@ public class ServerMessaging implements Runnable {
 		}
 
 		// Second Loop: kicks all matches
-		for (int i = match.size()-1; i >= 0; i--) {
+		for (int i = match.size() - 1; i >= 0; i--) {
 
 			Message kick = new Message(Message.MessageType.CLOSE_CONNECTION, Message.ContentType.TEXT, "Server",
 					("You were kicked\n"));
 			tinyPush(kick, match.get(i));
 			online.remove(match.get(i));
-			
-			 kick = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT, "Server",
+
+			kick = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT, "Server",
 					(handle + " was kicked\n"));
 			messageDecsSERVER(kick);
 
@@ -341,8 +301,171 @@ public class ServerMessaging implements Runnable {
 		// returns if any was booted or not
 		return booted;
 	}
-	
+
+	/**
+	 * setTarget sets target for kicking
+	 * 
+	 * @param handle
+	 */
 	public void setTarget(String handle) {
 		target = handle;
+	}
+
+	/**
+	 * deleteChange toggles the delete message setting
+	 * 
+	 * @return
+	 */
+	public String deleteChange() {
+		if (delete == true) {
+			delete = false;
+			return "Delete: disabled";
+		} else {
+			delete = true;
+			return "Delete: enabled";
+		}
+	}
+
+	/**
+	 * editChange toggles the edit message setting
+	 * 
+	 * @return
+	 */
+	public String editChange() {
+		if (edit == true) {
+			edit = false;
+			return "Edit: disabled";
+		} else {
+			edit = true;
+			return "Edit: enabled";
+		}
+	}
+
+	/**
+	 * intakeDec
+	 * takes in user messages and decides what to do with them
+	 * @param m
+	 * @param p
+	 */
+	private void intakeDec(Message m, Person p) {
+		switch (m.getType()) {
+
+		case NEW_MESSAGE:
+			m.setId(messQueue.count);
+			messQueue.add(m);
+			messagesSent += 1;
+			push(m);
+			break;
+		case EDIT_MESSAGE:
+			if (edit) {
+				messEdited += 1;
+				push(m);
+				m.setType(Message.MessageType.NEW_MESSAGE);
+				messQueue.set(m.getId(), m);
+			}
+			break;
+		case DELETE_MESSAGE:
+			if (delete) {
+				push(m);
+				messQueue.set(m.getId(), null);
+			}
+			break;
+		case CLOSE_CONNECTION:
+			Message left = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT, "Server",
+					("User" + p.getHandle() + "left\n"));
+
+			Ghost ghost = new Ghost(p, messQueue.count);
+
+			left.setId(messQueue.count);
+			messQueue.add(left);
+
+			offline.add(ghost);
+			online.remove(p);
+
+			push(left);
+			break;
+		case LEAVE_SERVER:
+			Message leave = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT, "Server",
+					("User" + p.getHandle() + "dissconnected\n"));
+
+			leave.setId(messQueue.count);
+			messQueue.add(leave);
+
+			online.remove(p);
+			died += 1;
+
+			push(leave);
+			break;
+		case UPDATE_SERVER_DATA:
+			break;
+		default:
+			break;
+
+		}
+	}
+
+	public void trap() {
+		trap = new Trap();
+		enable = true;
+	}
+
+	private void check(boolean enable) {
+		if (enable) {
+			ArrayList<Person> alive = new ArrayList<Person>();
+			for (int i = 0; i < online.size(); i++) {
+				alive.add(online.get(i));
+			}
+			ArrayList<Person> wait = new ArrayList<Person>();
+
+			while (alive.size() > 1) {
+				trap.question();
+
+				Message q = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT, "Mad AI",
+						trap.currentQuestion);
+
+				push(q);
+
+				for (int i = 0; i < online.size(); i++) {
+					wait.add(alive.get(i));
+				}
+
+				while (wait.size() > 0) {
+					for (int i = 0; i < wait.size(); i++) {
+						try {
+
+							if (wait.get(i).getInput().ready()) {
+
+								String mess = wait.get(i).getInput().readLine();
+								Message m = MessIN(mess);
+
+								if (!m.getContent().equals(trap.currentAnswer)) {
+									Message dead = new Message(Message.MessageType.NEW_MESSAGE,
+											Message.ContentType.TEXT, "Mad AI", "WRONG: you have died");
+									tinyPush(dead, wait.get(i));
+									alive.remove(wait.get(i));
+									wait.remove((i));
+
+								} else {
+									Message right = new Message(Message.MessageType.NEW_MESSAGE,
+											Message.ContentType.TEXT, "Mad AI", "RIGHT: you will live, for now...");
+									tinyPush(right, wait.get(i));
+									wait.remove(i);
+								}
+
+							} else {
+							}
+
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			Message win = new Message(Message.MessageType.NEW_MESSAGE,
+					Message.ContentType.TEXT, "Mad AI", "You win");
+			for (int i = 0; i < alive.size(); i++)
+			tinyPush(win, alive.get(i));
+			enable = false;
+		}
 	}
 }

@@ -1,7 +1,6 @@
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -202,7 +201,6 @@ public class Server implements Runnable {
 		p.setHandle(answer.substring(junkread, junkread + nameLength));
 
 		String pass = answer.substring(junkread + nameLength , junkread + nameLength + passLength );
-//		 System.out.println(pass);
 
 		if (serverType.equals("01") || serverType.equals("11")) {
 			p.setStatus(checkPassword(pass));
@@ -314,8 +312,8 @@ public class Server implements Runnable {
 
 		// Creating message for central
 		String mess = ("" + serverName.length() + "," + IconURL.length() + "," + ip.length() + "," + plt.length() + ","
-				+ (handles ? "1" : "0") + "," + (passes ? "1" : "0") + "," + (public_ ? "1" : "0") + "," + serverName
-				+ "," + IconURL + "," + ip + "," + prt);
+				+ (handles ? "1" : "0") + (passes ? "1" : "0") + (public_ ? "1" : "0") + "," + serverName
+				+ IconURL + ip + prt);
 		// return mess;
 
 		try {
@@ -330,7 +328,9 @@ public class Server implements Runnable {
 			reply = input.readLine();
 			s.close();
 		} catch (IOException e) {
+//			e.printStackTrace();
 			return mess;
+			
 		}
 
 		code = reply;
@@ -381,7 +381,7 @@ public class Server implements Runnable {
 	 *            the password
 	 * @return : if set
 	 */
-	private boolean setPassword(String x) {
+	protected boolean setPassword(String x) {
 		password = x;
 		return true;
 	}
@@ -423,21 +423,52 @@ public class Server implements Runnable {
 		return messaging.messagesSent;
 	}
 
+	/**
+	 * getMessEdited
+	 *  number of edited messages
+	 * @return int number of messages
+	 */
 	public int getMessEdited() {
 		return messaging.messEdited;
 	}
 	
+	/**
+	 * kick
+	 * hands down info for kick attempt
+	 * @param handle target for messaging
+	 */
 	public void kick(String handle) {
 		messaging.setTarget(handle);
 		messaging.kicking = true;
 	}
 	
+	/**
+	 * deleteChange toggles weather on not users can delete messages
+	 * @return
+	 */
 	public String deleteChange() {
 		return messaging.deleteChange();
 	}
 	
+	/**
+	 * editChange toggles weather or not users can edit their messages
+	 * @return
+	 */
 	public String editChange() {
 		return messaging.editChange();
+	}
+	
+	/**
+	 * getPass
+	 * returns weather or not this server requires a password
+	 * @return
+	 */
+	public boolean getPass() {
+		return passes;
+	}
+	
+	public void trap() {
+		messaging.trap();
 	}
 
 }
