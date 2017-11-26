@@ -60,7 +60,9 @@ public class ServerRun {
 			Sysp("KICK: will ask for target name and kick all with that name");
 			Sysp("MAKE: will ask for inputs then make a server");
 			Sysp("NAMES: Lists all the names of users currently online");
+			Sysp("REGISTER: will ask for your ip and attempt to register with the helium central server");
 			Sysp("SHUTDOWN: closes server and your server software");
+			Sysp("SHORT CODE: returns server short code if succesfully registered");
 			Sysp("STATS: prints some stats about your server if running");
 			break;
 		case "make":
