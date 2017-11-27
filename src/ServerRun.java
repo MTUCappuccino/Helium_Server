@@ -314,7 +314,7 @@ public class ServerRun {
 
 		while (checkPortInUse(port)) {
 			port += 1;
-			if (port >= 9000) {
+			if (port >= 65535) {
 				return -1;
 			}
 		}
@@ -380,7 +380,7 @@ public class ServerRun {
 		}
 		if (t == true)
 			port = Integer.parseInt(s);
-		if (port > 9050) {
+		if (port > 65535) {
 			Sysp("Port to large");
 			port = -1;
 		}
