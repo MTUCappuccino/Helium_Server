@@ -61,6 +61,7 @@ public class ServerMessaging implements Runnable {
 			}
 
 			check(enable);
+			enable = false;
 
 			for (int i = 0; i < online.size(); i++) {
 				try {
@@ -180,7 +181,14 @@ public class ServerMessaging implements Runnable {
 		int id = Integer.parseInt(unparsedSegments[1]);
 		Message.ContentType contentType = Message.ContentType.values()[Integer.parseInt(unparsedSegments[2])];
 		String sender = unparsedSegments[3];
-		String userMessage = unparsedSegments[4];// spliter
+
+		String userMessage;
+
+		try {
+			userMessage = unparsedSegments[4];// spliter
+		} catch (ArrayIndexOutOfBoundsException e) {
+			userMessage = "";
+		}
 
 		Message m = new Message(type, id, contentType, sender, System.currentTimeMillis(), userMessage);
 
@@ -342,8 +350,8 @@ public class ServerMessaging implements Runnable {
 	}
 
 	/**
-	 * intakeDec
-	 * takes in user messages and decides what to do with them
+	 * intakeDec takes in user messages and decides what to do with them
+	 * 
 	 * @param m
 	 * @param p
 	 */
@@ -425,7 +433,7 @@ public class ServerMessaging implements Runnable {
 
 				push(q);
 
-				for (int i = 0; i < online.size(); i++) {
+				for (int i = 0; i < alive.size(); i++) {
 					wait.add(alive.get(i));
 				}
 
@@ -438,18 +446,21 @@ public class ServerMessaging implements Runnable {
 								String mess = wait.get(i).getInput().readLine();
 								Message m = MessIN(mess);
 
-								if (!m.getContent().equals(trap.currentAnswer)) {
-									Message dead = new Message(Message.MessageType.NEW_MESSAGE,
+								if (!m.getContent().equals(trap.currentAnswer) || m.getContent() == null) {
+									Message dead = new Message(Message.MessageType.CLOSE_CONNECTION,
 											Message.ContentType.TEXT, "Mad AI", "WRONG: you have died");
 									tinyPush(dead, wait.get(i));
 									alive.remove(wait.get(i));
+									online.remove(wait.get(i));
 									wait.remove((i));
+									i--;
 
 								} else {
 									Message right = new Message(Message.MessageType.NEW_MESSAGE,
 											Message.ContentType.TEXT, "Mad AI", "RIGHT: you will live, for now...");
 									tinyPush(right, wait.get(i));
 									wait.remove(i);
+									i--;
 								}
 
 							} else {
@@ -461,10 +472,10 @@ public class ServerMessaging implements Runnable {
 					}
 				}
 			}
-			Message win = new Message(Message.MessageType.NEW_MESSAGE,
-					Message.ContentType.TEXT, "Mad AI", "You win");
-			for (int i = 0; i < alive.size(); i++)
-			tinyPush(win, alive.get(i));
+			Message win = new Message(Message.MessageType.NEW_MESSAGE, Message.ContentType.TEXT, "Mad AI", "You win!");
+			for (int i = 0; i < alive.size(); i++) {
+				tinyPush(win, alive.get(i));
+			}
 			enable = false;
 		}
 	}

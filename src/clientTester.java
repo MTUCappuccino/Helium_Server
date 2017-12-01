@@ -30,7 +30,7 @@ public class clientTester {
 			incoming(s, client.getInput());
 			/* incoming paste */
 
-			outgoing(client.getOutput(), "4,4,2upaMega"); //4,4,2upaMega\n //0,0,
+			outgoing(client.getOutput(), "4,6,2upa3DK5R8"); //4,4,2upaMega\n //0,0,
 			/* outgoing paste */
 
 			
