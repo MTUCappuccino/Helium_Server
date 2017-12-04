@@ -49,8 +49,8 @@ public class Server implements Runnable {
 	public boolean public_;
 
 	// TEMP Central info 
-	String hostName = "localhost";
-	int hostPort = 13245;
+	String hostName = "141.219.201.139";
+	int hostPort = 9090;
 	public String code = "";
 	
 	// Tracking this thread

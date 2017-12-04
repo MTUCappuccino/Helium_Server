@@ -20,7 +20,7 @@ public class ServerRun {
 
 	// Runs this thread until shutdown
 	public static void main(String[] args) {
-
+            
 		Scanner input = new Scanner(System.in);
 		Sysp("Commands: close, make, help, shutdown, edit...");
 		while (on) {

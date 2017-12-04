@@ -185,7 +185,9 @@ public class ServerMessaging implements Runnable {
 		String userMessage;
 
 		try {
-			userMessage = unparsedSegments[4];// spliter
+			userMessage = mess.substring(unparsedSegments[0].length() 
+                                + unparsedSegments[1].length() + unparsedSegments[2].length() 
+                                + unparsedSegments[3].length() + 4);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			userMessage = "";
 		}
